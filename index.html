@@ -224,35 +224,38 @@
 
         // Sales
         var data = {
-          Title: 'ยอดจำหน่าย (เล่ม)*',
+          Title: 'ยอดจำหน่าย',
           Value: manUtils.formatNumber(1181, 0),
+          Unit: 'เล่ม',
           Description: manUtils.getGlobalVars('loremShort'),
           Image: 'https://i.imgur.com/rndKXeC.jpg',
           Width: 120,
           Color: 'primary',
-          Remark: '* นับเฉพาะรายการที่ชำระเงินเสร็จสมบูรณ์',
+          Remark: 'นับเฉพาะรายการที่ชำระเงินเสร็จสมบูรณ์',
         };
         // Revenue
         spawnCard(deck, data);
         var data = {
-          Title: 'ค่าลิขสิทธิ์รับแล้ว (บาท)*',
+          Title: 'ค่าลิขสิทธิ์รับแล้ว',
           Value: manUtils.formatNumber(22439, 0),
+          Unit: 'บาท',
           Description: manUtils.getGlobalVars('loremShort'),
           Image: 'https://i.imgur.com/rndKXeC.jpg',
           Width: 120,
           Color: 'success',
-          Remark: '* % จากมูลค่าขายตามสัดส่วนค่าลิขสิทธิ์',
+          Remark: '% จากมูลค่าขายตามสัดส่วนค่าลิขสิทธิ์',
         };
         // Share
         spawnCard(deck, data);
         var data = {
-          Title: 'ค่าลิขสิทธิ์รอรับ (บาท)*',
+          Title: 'ค่าลิขสิทธิ์รอรับ',
           Value: manUtils.formatNumber(0, 0),
+          Unit: 'บาท',
           Description: manUtils.getGlobalVars('loremShort'),
           Image: 'https://i.imgur.com/rndKXeC.jpg',
           Width: 120,
           Color: 'dark',
-          Remark: '* รอบจ่ายครั้งต่อไป 28 มีนาคม 2564',
+          Remark: 'รอบจ่ายครั้งต่อไป 28 มีนาคม 2564',
         };
         spawnCard(deck, data);
 
@@ -583,10 +586,10 @@
 
         html += '<div class="card mb-4 box-shadow">';
           html += '<div class="card-header text-white bg-' + data.Color + '">';
-            html += '<h6 class="my-0 font-weight-normal">' + data.Title + '</h6>';
+            html += '<h4 class="my-0 font-weight-normal">' + data.Title + '</h4>';
           html += '</div>';
           html += '<div class="card-body">';
-            html += '<h1 class="card-title pricing-card-title">' + data.Value + '</h1>';
+            html += '<h1 class="card-title pricing-card-title">' + data.Value + ' <small><small>' + data.Unit + '</small></small></h1>';
             //html += '<p class="card-text">' + data.Description + '</p>';
             html += '<p class="card-text"><small class="text-muted">' + data.Remark + '</small></p>';
           html += '</div>';
