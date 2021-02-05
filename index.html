@@ -328,10 +328,10 @@
         divPeriod.className = 'btn-toolbar mb-2 mb-md-0';
         var html = "";
         html += '<div class="btn-group mr-2">';
-          html += '<button class="btn btn-sm btn-outline-secondary">7 วัน</button>';
-          html += '<button class="btn btn-sm btn-outline-secondary">7 สัปดาห์</button>';
-          html += '<button class="btn btn-sm btn-outline-secondary">7 เดือน</button>';
-          html += '<button class="btn btn-sm btn-outline-secondary">7 ปี</button>';
+          html += '<button class="btn btn-sm btn-outline-secondary">รายวัน</button>';
+          html += '<button class="btn btn-sm btn-outline-secondary">รายสัปดาห์</button>';
+          html += '<button class="btn btn-sm btn-outline-secondary">รายเดือน</button>';
+          html += '<button class="btn btn-sm btn-outline-secondary">รายปี</button>';
         html += '</div>';
         divPeriod.innerHTML = html;
         panel.appendChild(divPeriod);
@@ -360,7 +360,7 @@
     		var lineChartData = {
     			labels: ['1 สัปดาห์ก่อน', '6 วันก่อน', '5 วันก่อน', '4 วันก่อน', '3 วันก่อน', 'เมื่อวาน', 'วันนี้'],
     			datasets: [{
-    				label: '#1',
+    				label: 'เล่ม #1',
     				borderColor: window.chartColors.red,
     				backgroundColor: window.chartColors.red,
     				fill: false,
@@ -375,7 +375,7 @@
     				],
     				yAxisID: 'y-axis-1',
     			}, {
-    				label: '#2',
+    				label: 'เล่ม #2',
     				borderColor: window.chartColors.green,
     				backgroundColor: window.chartColors.green,
     				fill: false,
@@ -390,7 +390,7 @@
     				],
     				yAxisID: 'y-axis-2'
     			}, {
-    				label: '#3',
+    				label: 'เล่ม #3',
     				borderColor: window.chartColors.blue,
     				backgroundColor: window.chartColors.blue,
     				fill: false,
