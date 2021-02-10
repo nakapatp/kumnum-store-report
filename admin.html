@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="favicon.ico">
+
+    <title>Dashboard Template for Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Tabulator CSS-->
+    <link href="https://unpkg.com/tabulator-tables@4.9.3/dist/css/tabulator.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/dashboard.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
+      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">สำนักพิมพ์ "คำนำ"</a>
+      <!-- Navigation Bar Content
+      <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+      <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+          <a class="nav-link" href="#">Sign out</a>
+        </li>
+      </ul>
+      -->
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+          <div class="sidebar-sticky">
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link" href="admin.html?id=main-dashboard">
+                  <span data-feather="home"></span>
+                  Dashboard <!-- <span class="sr-only">(current)</span> -->
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="admin.html?id=main-orders">
+                  <span data-feather="file"></span>
+                  Orders
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Main Dashboard -->
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+          <div id="main-dashboard">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+              <h1 class="h2">Dashboard</h1>
+            </div>
+
+            <canvas class="my-4" id="myChart" width="900" height="380"></canvas>
+
+            <h2>Daily Report</h2>
+            <div class="table-responsive" id="table-report">
+              <!-- Report Table Data -->
+            </div>
+            <p>
+              * ยอดขาย (บาท) ไม่รวมค่าจัดส่ง
+            </p>
+          </div>
+          <!-- Main ORDERS -->
+          <div id="main-orders">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+              <h1 class="h2">Orders</h1>
+            </div>
+            <div id="tabulator-orders"></div>
+          </div>
+        </main>
+      </div>
+
+    </div>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="vendor/jquery/jquery.slim.min.js"><\/script>')</script>
+    <script src="js/popper.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script>
+    <script>
+      feather.replace()
+    </script>
+
+    <!-- Graphs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+    <script>
+      var ctx = document.getElementById("myChart");
+      var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+          datasets: [{
+            data: [15339, 21345, 18483, 24003, 23489, 24092, 12034],
+            lineTension: 0,
+            backgroundColor: 'transparent',
+            borderColor: '#007bff',
+            borderWidth: 4,
+            pointBackgroundColor: '#007bff'
+          }]
+        },
+        options: {
+          scales: {
+            yAxes: [{
+              ticks: {
+                beginAtZero: false
+              }
+            }]
+          },
+          legend: {
+            display: false,
+          }
+        }
+      });
+    </script>
+    <!-- Tabulator JS -->
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.min.js"></script>
+    <!-- Tabulator Data -->
+    <script type="text/javascript">
+      //custom max min header filter
+      var minMaxFilterEditor = function(cell, onRendered, success, cancel, editorParams){
+
+          var end;
+
+          var container = document.createElement("span");
+
+          //create and style inputs
+          var start = document.createElement("input");
+          start.setAttribute("type", "number");
+          start.setAttribute("placeholder", "Min");
+          start.setAttribute("min", 0);
+          start.setAttribute("max", 100);
+          start.style.padding = "4px";
+          start.style.width = "50%";
+          start.style.boxSizing = "border-box";
+
+          start.value = cell.getValue();
+
+          function buildValues(){
+              success({
+                  start:start.value,
+                  end:end.value,
+              });
+          }
+
+          function keypress(e){
+              if(e.keyCode == 13){
+                  buildValues();
+              }
+
+              if(e.keyCode == 27){
+                  cancel();
+              }
+          }
+
+          end = start.cloneNode();
+
+          start.addEventListener("change", buildValues);
+          start.addEventListener("blur", buildValues);
+          start.addEventListener("keydown", keypress);
+
+          end.addEventListener("change", buildValues);
+          end.addEventListener("blur", buildValues);
+          end.addEventListener("keydown", keypress);
+
+
+          container.appendChild(start);
+          container.appendChild(end);
+
+          return container;
+       }
+
+      //custom max min filter function
+      function minMaxFilterFunction(headerValue, rowValue, rowData, filterParams){
+          //headerValue - the value of the header filter element
+          //rowValue - the value of the column in this row
+          //rowData - the data for the row being filtered
+          //filterParams - params object passed to the headerFilterFuncParams property
+
+              if(rowValue){
+                  if(headerValue.start != ""){
+                      if(headerValue.end != ""){
+                          return rowValue >= headerValue.start && rowValue <= headerValue.end;
+                      }else{
+                          return rowValue >= headerValue.start;
+                      }
+                  }else{
+                      if(headerValue.end != ""){
+                          return rowValue <= headerValue.end;
+                      }
+                  }
+              }
+
+          return true; //must return a boolean, true if it passes the filter.
+      }
+      // Generate print icon
+      var printIcon = function(cell, formatterParams){ //plain text value
+          return (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์') ? "<i class='fa fa-print'></i>" : '';
+      };
+      // Generate reject icon
+      var rejectIcon = function(cell, formatterParams){ //plain text value
+          return (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')
+                  ? ''
+                  : (cell.getRow().getData().VerifyRejected  == 1) ? "<i class='fa fa-times'></i>" : "<i class='fa fa-thumbs-down'></i>";
+      };
+      // Generate view icon
+      var trackingIcon = function(cell, formatterParams){ //plain text value
+          return "<i class='fa fa-search'></i>";
+      };
+      // Generate confirm icon
+      var verifyIcon = function(cell, formatterParams){ //plain text value
+          return (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')
+                  ? ''
+                  : (cell.getRow().getData().PaymentVerified  == 1) ? "<i class='fa fa-check'></i>" : "<i class='fa fa-thumbs-up'></i>";
+      };
+      // Generate view icon
+      var viewIcon = function(cell, formatterParams) { //plain text value
+          return "<i class='fa fa-eye'></i>";
+      };
+    </script>
+
+    <!-- KumNum Store JavaScript -->
+    <script type="text/javascript" src="js/manutils.js"></script>
+
+    <!-- Dashboard JavaScript -->
+    <script type="text/javascript">
+      var sheetURL = 'https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc';
+      var globalVars = null;
+      var dataReport = null;
+
+      function showMainOf(id) {
+        document.getElementById('main-dashboard').style.display = 'none';
+        document.getElementById('main-orders').style.display = 'none';
+        document.getElementById(id).style.display = 'block';
+
+        if (id == 'main-dashboard') {
+          // Get 'PublisherReport' data
+          fetch(sheetURL + '/tabs/PublisherReport')
+          .then((response) => { return response.json(); })
+          .then((myJson) => {
+            dataReport = myJson;
+            showPublisherReport();
+          })
+          .catch((error) => { console.log(error); });
+
+        }
+
+      }
+      function showPublisherReport() {
+        var tableReport = document.getElementById('table-report');
+        var html = "";
+
+        html += '<table class="table table-striped table-sm">';
+        html += '<thead>';
+        html += '<tr>';
+        html += '<th>วันที่</th><th>ยอดจำหน่าย (เล่ม)</th><th>ยอดขาย (บาท)*</th><th>ส่วนแบ่ง "คำนำ"</th><th>ส่วนแบ่ง "ระบบ"</th>';
+        html += '</tr>';
+        html += '</thead>';
+
+        html += '<tbody>';
+
+        var sumOf = {
+          Sales: 0,
+          SubTotal: 0,
+          SharePublisher: 0,
+          SharePlatform: 0,
+        }
+        for (var i=0; i<dataReport.length; i++) {
+          html += '<tr>';
+            html += '<td>' + dataReport[i].Date + '</td>';
+            html += '<td>' + manUtils.formatNumber(dataReport[i].Sales, 0) + '</td>';
+            html += '<td>' + manUtils.formatNumber(dataReport[i].SubTotal, 0) + '</td>';
+            html += '<td>' + manUtils.formatNumber(dataReport[i].SharePublisher, 0) + '</td>';
+            html += '<td>' + manUtils.formatNumber(dataReport[i].SharePlatform, 0) + '</td>';
+          html += '</tr>';
+
+          sumOf['Sales'] += Number(dataReport[i].Sales);
+          sumOf['SubTotal'] += Number(dataReport[i].SubTotal);
+          sumOf['SharePublisher'] += Number(dataReport[i].SharePublisher);
+          sumOf['SharePlatform'] += Number(dataReport[i].SharePlatform);
+        }
+        // Row of Summation
+        html += '<tr>';
+          html += '<td><strong>รวม</strong></td>';
+          html += '<td><strong>' + manUtils.formatNumber(sumOf['Sales'], 0) + '</strong></td>';
+          html += '<td><strong>' + manUtils.formatNumber(sumOf['SubTotal'], 0) + '</strong></td>';
+          html += '<td><strong>' + manUtils.formatNumber(sumOf['SharePublisher'], 0) + '</strong></td>';
+          html += '<td><strong>' + manUtils.formatNumber(sumOf['SharePlatform'], 0) + '</strong></td>';
+        html += '</tr>'
+
+        html += '</tbody>';
+        html += '</table>';
+
+        tableReport.innerHTML = html;
+      }
+      function init() {
+        var id = (manUtils.getParam('id') == 'main-dashboard'
+                  || manUtils.getParam('id') == 'main-orders')
+               ? manUtils.getParam('id')
+               : 'main-dashboard';
+
+        // GET GlobalVars
+        // -- Get 'Orders' data
+        fetch(sheetURL + '/tabs/GlobalVars')
+        .then((response) => { return response.json(); })
+        .then((myJson) => {
+          globalVars = myJson;
+
+          // --Get 'Orders' data
+          fetch(sheetURL + '/tabs/Orders/Enable/*1*')
+          .then((response) => { return response.json(); })
+          .then((myJson) => {
+            // Define Tabulator Data
+            var table = new Tabulator("#tabulator-orders", {
+                data:myJson, //set initial table data
+                columns:[
+                    {title:"วันที่สั่งซื้อ", width:110, field:"CreatedDate", headerFilter:"input"},
+                    {formatter:viewIcon, width:40, align:"center", cellClick:function(e, cell){
+                      //console.log(cell);
+                      window.open(manUtils.getGlobalVars('checkoutURL') + "?id=" + cell.getRow().getData().OrderId);
+                    }},
+                    {title:"เลขที่คำสั่ง", field:"OrderId"},
+                    {title:"สถานะคำสั่ง", width:180, field:"OrderStatus", editor:"select", editorParams:{"ป้อนข้อมูลผู้รับ":"ป้อนข้อมูลผู้รับ", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}, headerFilter:true, headerFilterParams:{"ป้อนข้อมูลผู้รับ":"ป้อนข้อมูลผู้รับ", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}},
+                    //{title:"Count", field:"Count"},
+                    {formatter:verifyIcon, width:40, align:"center", cellClick:function(e, cell){
+                      //console.log(cell.getRow().getData().OrderId);
+                      fetch(sheetURL + '/tabs/Orders/OrderId/*' + cell.getRow().getData().OrderId + '*',
+                        {
+                          method: "PATCH",
+                          mode: "cors",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            OrderStatus: 'ชำระเงินเสร็จสมบูรณ์',
+                            PaymentVerified: '1',
+                            VerifyRejected: '0',
+                          }),
+                        }
+                      )
+                      .then((response) => { return response.json(); })
+                      .then((data) => {
+                        // Update 'Sales' as well
+                        fetch(sheetURL + '/tabs/Sales/OrderId/*' + cell.getRow().getData().OrderId + '*',
+                          {
+                            method: "PATCH",
+                            mode: "cors",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              PaymentStatus: 'ชำระเงินเสร็จสมบูรณ์',
+                              PaymentDate: cell.getRow().getData().PaymentDate,
+                            }),
+                          }
+                        )
+                        .then((response) => { return response.json(); })
+                        .then((data) => {
+                          table.redraw(true);
+                          window.location.href = "admin.html?id=main-orders";
+                        })
+                        .catch((error) => { console.log(error); });
+                      })
+                      .catch((error) => { console.log(error); });
+                    }},
+                    {formatter:rejectIcon, width:40, align:"center", cellClick:function(e, cell){
+                      //console.log(cell.getRow().getData().OrderId);
+                      fetch(sheetURL + '/tabs/Orders/OrderId/*' + cell.getRow().getData().OrderId + '*',
+                        {
+                          method: "PATCH",
+                          mode: "cors",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            OrderStatus: 'ชำระเงินแล้วรอตรวจสอบ',
+                            PaymentVerified: '0',
+                            VerifyRejected: '1',
+                          }),
+                        }
+                      )
+                      .then((response) => { return response.json(); })
+                      .then((data) => {
+                        table.redraw(true);
+                        window.location.href = "admin.html?id=main-orders";
+                      })
+                      .catch((error) => { console.log(error); });
+                    }},
+                    {title:"ยอดโอน", field:"GrandTotal"},
+                    {title:"วันที่ชำระ", width:110, field:"PaymentDate", headerFilter:"input"},
+                    {title:"เวลา", field:"PaymentTime"},
+                    {title:"", field:"PaymentVerified", formatter:"tickCross", width:40, align:"center"},
+                    {formatter:printIcon, width:40, align:"center", cellClick:function(e, cell){
+                      //console.log(cell.getRow().getData().OrderId);
+                      window.open("https://i.imgur.com/5hGMMJz.jpg");
+                    }},
+                    {title:"เลขติดตามพัสดุ", field:"TrackingCode"},
+                    {formatter:trackingIcon, width:40, align:"center", cellClick:function(e, cell){
+                      //console.log(cell);
+                      window.open(cell.getRow().getData().TrackingLink);
+                    }},
+                    /*
+                    {formatter:verifyIcon, width:40, align:"center", cellClick:function(e, cell){
+                      //console.log(cell.getRow().getData().OrderId);
+                    }},
+                    {title:"FirstName", width:150, field:"FirstName", headerFilter:"input"},
+                    {title:"Phone", width:130, field:"Phone", headerFilter:"input"},
+                    {title:"Address", field:"Address"},
+                    {title:"Address", field:"Address"},
+                    {title:"SubTotal", field:"SubTotal"},
+                    {title:"ShippingCost", field:"ShippingCost"},
+                    */
+                ],
+            });
+            /*
+            var table = new Tabulator("#tabulator-orders", {
+                height:"311px",
+                layout:"fitColumns",
+                columns:[
+                    {title:"Name", field:"name", width:150, headerFilter:"input"},
+                    {title:"Progress", field:"progress", width:150, formatter:"progress", sorter:"number", headerFilter:minMaxFilterEditor, headerFilterFunc:minMaxFilterFunction},
+                    {title:"Gender", field:"gender", editor:"select", editorParams:{"male":"Male", "female":"Female"}, headerFilter:true, headerFilterParams:{"male":"Male", "female":"Female"}},
+                    {title:"Rating", field:"rating", editor:"star", align:"center", width:100, headerFilter:"number", headerFilterPlaceholder:"at least...", headerFilterFunc:">="},
+                    {title:"Favourite Color", field:"col", headerFilter:true},
+                    {title:"Date Of Birth", field:"dob", align:"center", sorter:"date",  headerFilter:"input"},
+                    {title:"Driver", field:"car", align:"center", formatter:"tickCross",  headerFilter:"input"},
+                ],
+            });
+            */
+          })
+          .catch((error) => {
+            // Errors are reported there
+            console.log(error);
+          });
+
+          showMainOf(id);
+          //showMainOf('main-orders');
+          //console.log(table);
+        })
+        .catch((error) => { console.log(error); });
+      }
+
+      window.onload = init;
+
+    </script>
+  </body>
+</html>
