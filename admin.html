@@ -322,14 +322,14 @@
           return ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                   || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน'))
                 ? ''
-                : (cell.getRow().getData().VerifyRejected  == 'True') ? "<i class='fa fa-times'></i>" : "<i class='fa fa-thumbs-down'></i>";
+                : (cell.getRow().getData().VerifyRejected  == 1) ? "<i class='fa fa-times'></i>" : "<i class='fa fa-thumbs-down'></i>";
       };
       // Generate confirm icon
       var verifyIcon = function(cell, formatterParams){
           return ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                   || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน'))
                   ? ''
-                  : (cell.getRow().getData().PaymentVerified  == 'True') ? "<i class='fa fa-check'></i>" : "<i class='fa fa-thumbs-up'></i>";
+                  : (cell.getRow().getData().PaymentVerified  == 1) ? "<i class='fa fa-check'></i>" : "<i class='fa fa-thumbs-up'></i>";
       };
       function swapHighlight(productId, value) {
         fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
@@ -457,8 +457,8 @@
             headers: { "Content-Type": "application/json",},
             body: JSON.stringify({
               OrderStatus: 'ชำระเงินเสร็จสมบูรณ์',
-              PaymentVerified: 'True',
-              VerifyRejected: 'False',
+              PaymentVerified: "1",
+              VerifyRejected: "0",
             }),
           }
         )
@@ -494,8 +494,8 @@
             },
             body: JSON.stringify({
               OrderStatus: 'ชำระเงินแล้วรอตรวจสอบ',
-              PaymentVerified: 'False',
-              VerifyRejected: 'True',
+              PaymentVerified: "0",
+              VerifyRejected: "1",
             }),
           }
         )

@@ -274,7 +274,7 @@
             html += '<td class="text-center">' + arrProducts[i].Amount + '</td>';
             html += '<td class="text-right">' + arrProducts[i].Price + '</td>';
             html += '<td class="text-right">' + arrProducts[i].SharePerUnit + '</td>';
-            html += '<td class="text-right">' + manUtils.formatNumber(arrProducts[i].CopyrightShare, 1) + '</td>';
+            html += '<td class="text-right">' + manUtils.formatNumber(arrProducts[i].CopyrightShare, 0) + '</td>';
           html += '</tr>';
           sumSales += Number(arrProducts[i].Amount);
           sumShare += Number(arrProducts[i].CopyrightShare);
