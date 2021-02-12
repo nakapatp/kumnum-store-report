@@ -1,14 +1,43 @@
 // ***************************************************
-// Shopping Cart functions
+// Utilities functions
+// v.1.1 (2021-02-10 13:08)
 
 var manUtils = (function() {
   // Public methods and properties
   var obj = {};
 
+  obj.decryptKey = function(key) {
+    var raw = key;
+
+    return raw;
+  };
+  obj.formatDateThai = function(date) {
+    var str = "";
+    var month = {
+      '01': 'มกราคม',
+      '02': 'กุมภาพันธ์',
+      '03': 'มีนาคม',
+      '04': 'เมษายน',
+      '05': 'พฤษภาคม',
+      '06': 'มิถุนายน',
+      '07': 'กรกฎาคม',
+      '08': 'สิงหาคม',
+      '09': 'กันยายน',
+      '10': 'ตุลาคม',
+      '11': 'พฤศจิกายน',
+      '12': 'ธันวาคม',
+    };
+    return date.slice(8, 10) + " " + month[date.slice(5,7)] + " " + (Number(date.slice(0, 4)) + 543);
+  };
+  obj.formatName = function(title, firstname, lastname) {
+    return (firstname.includes("พระ"))
+            ? firstname + " " + lastname + ", " + title
+            : title + firstname + " " + lastname;
+  };
   obj.formatNumber = function(number, fixed) {
     var str = Number(number).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
     return (fixed == 0) ? str.slice(0,-3) : str;
-  }
+  };
   obj.generateRandomLetter = function () {
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -31,6 +60,10 @@ var manUtils = (function() {
     while (parent.firstChild) {
         parent.removeChild(parent.firstChild);
     }
+  };
+  obj.selectElement = function (id, valueToSelect) {
+      let element = document.getElementById(id);
+      element.value = valueToSelect;
   };
 
   return obj;

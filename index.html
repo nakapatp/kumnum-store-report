@@ -30,7 +30,7 @@
     <div class="overlay" id="overlay"></div>
 
     <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
-      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">ร้านหนังสือ "คำนำ" ออนไลน์</a>
+      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">ร้านหนังสือ "คำนำ"</a>
     </nav>
 
     <div class="container-fluid">
@@ -41,45 +41,20 @@
             <ul class="nav flex-column" id="menu-sidebar">
               <!-- Dynamically load sidebar menu item -->
             </ul>
-            <!-- Sidebar 2nd section
-            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-              <span>Saved reports</span>
-              <a class="d-flex align-items-center text-muted" href="#">
-                <span data-feather="plus-circle"></span>
-              </a>
-            </h6>
+            <hr>
             <ul class="nav flex-column mb-2">
               <li class="nav-item">
-                <a class="nav-link" href="#">
-                  <span data-feather="file-text"></span>
-                  Current month
+                <a class="nav-link" href="#" id="menu-website" target="_blank">
+                  <i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;เวบไซต์
                 </a>
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">
-                  <span data-feather="file-text"></span>
-                  Last quarter
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">
-                  <span data-feather="file-text"></span>
-                  Social engagement
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">
-                  <span data-feather="file-text"></span>
-                  Year-end sale
-                </a>
-              </li>
-            </ul> - end of sidebar 2nd section -->
+            </ul>
           </div>
         </nav>
 
         <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
           <div id="panel-content">
-            <h2 id="panel-header"></h2>
+            <h3 id="panel-header"></h3>
             <p id="panel-description"></p>
           </div>
         </main>
@@ -101,14 +76,19 @@
     <!-- manUtils JavaScript -->
     <script src="js/manutils.js"></script>
 
+    <!-- Font Awesome Kit Code -->
+    <script src="https://kit.fontawesome.com/354ed2e7c0.js" crossorigin="anonymous"></script>
+
     <!-- Dashboard JavaScript -->
     <script type="text/javascript">
+      var sheetURL = 'https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc';
       var menuId = (manUtils.getParam('id') == null || manUtils.getParam('id') == "") ? 'main-dashboard' : manUtils.getParam('id');
       var key = manUtils.getParam('key');
       var globalVars = null;
       var keyOwner = null;
       var arrProducts = null;
       var arrSales = null;
+      var arrPayments = null;
 
       function init() {
 
@@ -117,7 +97,7 @@
         // Show Panel Content
         var iPanel = document.getElementById('panel-content');
         switch (menuId) {
-          case 'main-dashboard': showDashbord(iPanel); break;
+          case 'main-dashboard': showDashboard(iPanel); break;
           case 'main-profile': showProfile(iPanel); break;
           case 'main-shop': showShop(iPanel); break;
           case 'main-book': showBook(iPanel); break;
@@ -128,13 +108,26 @@
 
       function loadContacts(contactId) {
         // GET Author Info
-        fetch('https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc/tabs/Contacts/ContactId/*' + contactId + '*')
+        fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*')
         .then((response) => {
             return response.json();
         })
         .then((myJson) => {
           keyOwner = myJson[0];
 
+          loadPayments(contactId);
+        })
+        .catch((error) => { console.log(error); });
+      }
+
+      function loadPayments(contactId) {
+        // GET Author Info
+        fetch(sheetURL + '/tabs/Payments/ContactId/*' + contactId + '*')
+        .then((response) => {
+            return response.json();
+        })
+        .then((myJson) => {
+          arrPayments = myJson;
 
           if (manUtils.getParam('id') == 'main-dashboard'
               || manUtils.getParam('id') == 'main-book' ) {
@@ -145,10 +138,11 @@
         })
         .catch((error) => { console.log(error); });
       }
+
       function loadProducts(contactId) {
-        var fetchUrl = 'https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc/tabs/Products';
+        var fetchUrl = sheetURL + '/tabs/Products';
         if (contactId) fetchUrl += '/ContactId/*' + contactId + '*';
-        //if (true) fetchUrl += '/Highlight/*Yes*'; // {DebugPoint}
+        //if (true) fetchUrl += '/Highlight/*True*'; // {DebugPoint}
         //if (manUtils.getParam('book')) fetchUrl += '/ProductId/*' + manUtils.getParam('book') + '*'; // {DebugPoint}
 
         // GET Author's Collections
@@ -162,10 +156,10 @@
         })
         .catch((error) => { console.log(error); });
       }
+
       function loadSales(contactId) {
-        var fetchUrl = 'https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc/tabs/Sales';
-        //if (contactId) fetchUrl += '/ContactId/*' + contactId + '*';
-        //if (true) fetchUrl += '/Highlight/*Yes*'; // {DebugPoint}
+        var fetchUrl = sheetURL + '/tabs/Sales/ContactId/*' + keyOwner.ContactId + '*';
+        //if (true) fetchUrl += '/Highlight/*True*'; // {DebugPoint}
         //if (manUtils.getParam('book')) fetchUrl += '/ProductId/*' + manUtils.getParam('book') + '*'; // {DebugPoint}
 
         // GET Author's Collections
@@ -179,43 +173,11 @@
         })
         .catch((error) => { console.log(error); });
       }
-      function showBook(panel) {
-        document.getElementById('panel-header').innerHTML = 'หนังสือ (' + arrProducts.length + ')';
-        document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('guideBook');
-        panel.appendChild(document.createElement('hr'));
-        if (keyOwner && arrProducts) {
 
-          var html = '';
-          for (var i in arrProducts) {
-            var data = {
-              Title: arrProducts[i].Title,
-              Description: arrProducts[i].Brief,
-              imageURL: arrProducts[i].ImageFull,
-              maxWidth: 280,
-            };
-            if (arrProducts[i].Available == 'No')
-              data.Title += ' <div class="badge badge-danger">งดจำหน่าย</div>';
-            else {
-              data.Title += (arrProducts[i].PrivateSale == 'Yes')
-                   ? ' <div class="badge badge-warning">ขายเป็นส่วนบุคคล</div>'
-                   : ' <div class="badge badge-success">ขายเป็นสาธารณะ</div>';
-            }
-            html = '<h4>' + arrProducts[i].Price + ' บ.</h4>';
-            html += '<p><ul class="list-group">';
-              html += '<li class="list-group-item">ลิงค์สั่งซื้อ&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + arrProducts[i].PrivateSaleURL + '">' + arrProducts[i].PrivateSaleURL + '</a></li>';
-              html += '<li class="list-group-item">คิวอาร์โค้ด&nbsp;&nbsp;<i class="fa fa-qrcode fa-lg"></i>&nbsp;&nbsp;<a href="' + arrProducts[i].PrivateSaleURL + '">' + arrProducts[i].PrivateSaleURL + '</a></li>';
-            html += '</ul></p>';
-            data.Description += html;
-            spawnMediaObject(panel, data);
-
-            // HR
-            panel.appendChild(document.createElement('hr'));
-          }
-        }
-      }
-      function showDashbord(panel) {
-        document.getElementById('panel-header').innerHTML = 'รายงานสรุป';
-        document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('guideDashboard');
+      function showDashboard(panel) {
+        // Copyright Share Report
+        document.getElementById('panel-header').innerHTML = 'รายงานสรุปการจัดจำหน่าย';
+        document.getElementById('panel-description').innerHTML = 'ของ ' + manUtils.formatName(keyOwner.Title, keyOwner.FirstName, keyOwner.LastName);
         //panel.appendChild(document.createElement('hr'));
 
         var deck = document.createElement('div');
@@ -224,44 +186,64 @@
 
         // Sales
         var data = {
-          Title: 'ยอดจำหน่าย',
-          Value: manUtils.formatNumber(1181, 0),
+          ElementID: 'collective-sales',
+          Title: 'ยอดจำหน่ายสะสม',
+          Value: manUtils.formatNumber(keyOwner.SaleCount, 0),
           Unit: 'เล่ม',
           Description: manUtils.getGlobalVars('loremShort'),
-          Image: 'https://i.imgur.com/rndKXeC.jpg',
+          Image: 'https://i.imgur.com/Ujp4WxW.jpg',
           Width: 120,
+          TextColor: 'white',
           Color: 'primary',
           Remark: 'นับเฉพาะรายการที่ชำระเงินเสร็จสมบูรณ์',
         };
-        // Revenue
         spawnCard(deck, data);
+
+        // Transferred Share
         var data = {
+          ElementID: 'transferred-share',
           Title: 'ค่าลิขสิทธิ์รับแล้ว',
-          Value: manUtils.formatNumber(22439, 0),
+          Value: manUtils.formatNumber(keyOwner.ShareReceived, 0),
           Unit: 'บาท',
           Description: manUtils.getGlobalVars('loremShort'),
-          Image: 'https://i.imgur.com/rndKXeC.jpg',
+          Image: 'https://i.imgur.com/Ujp4WxW.jpg',
           Width: 120,
+          TextColor: 'white',
           Color: 'success',
-          Remark: '% จากมูลค่าขายตามสัดส่วนค่าลิขสิทธิ์',
-        };
-        // Share
-        spawnCard(deck, data);
-        var data = {
-          Title: 'ค่าลิขสิทธิ์รอรับ',
-          Value: manUtils.formatNumber(0, 0),
-          Unit: 'บาท',
-          Description: manUtils.getGlobalVars('loremShort'),
-          Image: 'https://i.imgur.com/rndKXeC.jpg',
-          Width: 120,
-          Color: 'dark',
-          Remark: 'รอบจ่ายครั้งต่อไป 28 มีนาคม 2564',
+          Remark: 'นับเฉพาะรายการที่ชำระเงินเสร็จสมบูรณ์',
         };
         spawnCard(deck, data);
 
+        // Coming Share
+        var data = {
+          ElementID: 'coming-share',
+          Title: 'ค่าลิขสิทธิ์รอรับ',
+          Value: manUtils.formatNumber(keyOwner.ShareAwait, 0),
+          Unit: 'บาท',
+          Description: manUtils.getGlobalVars('loremShort'),
+          Image: 'https://i.imgur.com/Ujp4WxW.jpg',
+          Width: 120,
+          TextColor: 'black',
+          Color: 'warning',
+          Remark: 'รอบจ่ายครั้งต่อไป ' + manUtils.formatDateThai(keyOwner.NextPaid),
+        };
+        spawnCard(deck, data);
+
+        // Table of Sale Summary
+        appendTableSaleSummary(panel);
+
+        // Chart
+        //appendChart(panel);
+
+        // Table of Latest Sales
+        //panel.appendChild(document.createElement('hr'));
+        appendTableLatestSale(panel);
+      }
+
+      function appendTableSaleSummary(panel) {
         // Table of Sales Summary
-        var hTableSum = document.createElement('h2');
-        hTableSum.innerHTML = 'สรุปยอดจำหน่ายรายเล่ม';
+        var hTableSum = document.createElement('h3');
+        hTableSum.innerHTML = 'สรุปแบบรายเล่ม';
         panel.appendChild(hTableSum);
 
         var pTableSum = document.createElement('p');
@@ -272,13 +254,13 @@
         tableSum.className = 'table table-sm';
         panel.appendChild(tableSum);
 
-        html = '<thead><tr>'
+        var html = '<thead><tr class="bg-light">'
           html += '<th class="text-center" scope="col">#</th>';
           html += '<th class="text-center" scope="col">ขายวันแรก</th>';
           html += '<th scope="col">ชื่อหนังสือ</th>';
           html += '<th class="text-center" scope="col">ยอดจำหน่าย (เล่ม)</th>';
           html += '<th class="text-right" scope="col">ราคาปก (บ.)</th>';
-          html += '<th class="text-right" scope="col">สัดส่วนค่าลิขสิทธิ์ (%)</th>';
+          html += '<th class="text-right" scope="col">ค่าลิขสิทธิ์ต่อเล่ม (บ.)</th>';
           html += '<th class="text-right" scope="col">ส่วนแบ่งรายได้ (บ.)</th>';
         html += '</tr></thead>';
         html += '<tbody>';
@@ -287,21 +269,23 @@
         for (var i in arrProducts) {
           html += '<tr>';
             html += '<td class="text-center" scope="row">' + Number(Number(i) + 1) +'</td>';
-            html += '<td class="text-center">' + arrProducts[i].CreatedDate + '</td>';
+            html += '<td class="text-center">' + manUtils.formatDateThai(arrProducts[i].CreatedDate) + '</td>';
             html += '<td>' + arrProducts[i].Title + '</td>';
             html += '<td class="text-center">' + arrProducts[i].Amount + '</td>';
             html += '<td class="text-right">' + arrProducts[i].Price + '</td>';
-            html += '<td class="text-right">' + arrProducts[i].CopyrightRatio + '</td>';
-            html += '<td class="text-right">' + manUtils.formatNumber(arrProducts[i].CopyrightShare, 0) + '</td>';
+            html += '<td class="text-right">' + arrProducts[i].SharePerUnit + '</td>';
+            html += '<td class="text-right">' + manUtils.formatNumber(arrProducts[i].CopyrightShare, 1) + '</td>';
           html += '</tr>';
           sumSales += Number(arrProducts[i].Amount);
           sumShare += Number(arrProducts[i].CopyrightShare);
         }
+        //document.getElementById('collective-sales').innerHTML = manUtils.formatNumber(sumSales, 0);
+        //document.getElementById('coming-share').innerHTML = manUtils.formatNumber(sumShare, 0);
         // Total Row
         html += '<tr>';
           html += '<td class="text-center" scope="row"></td>';
           html += '<td class="text-center"></td>';
-          html += '<td>รวม</td>';
+          html += '<td><h4>รวม</h4></td>';
           html += '<td class="text-center"><h4>' + manUtils.formatNumber(sumSales, 0) + '</h4></td>';
           html += '<td class="text-right"></td>';
           html += '<td class="text-right"></td>';
@@ -318,23 +302,22 @@
         html += '</tr>';
         html += '</tbody>'
         tableSum.innerHTML = html;
+      }
 
-        // HR
-        //panel.appendChild(document.createElement('hr'));
-
+      function appendChart(panel) {
         // Chart Sale Summary
-        var hChart = document.createElement('h2');
-        hChart.innerHTML = 'ยอดจำหน่ายรายเล่มตามช่วงเวลา';
+        var hChart = document.createElement('h3');
+        hChart.innerHTML = 'สรุปตามช่วงเวลา';
         panel.appendChild(hChart);
 
         var divPeriod = document.createElement('div');
         divPeriod.className = 'btn-toolbar mb-2 mb-md-0';
         var html = "";
         html += '<div class="btn-group mr-2">';
-          html += '<button class="btn btn-sm btn-outline-secondary">รายวัน</button>';
-          html += '<button class="btn btn-sm btn-outline-secondary">รายสัปดาห์</button>';
-          html += '<button class="btn btn-sm btn-outline-secondary">รายเดือน</button>';
-          html += '<button class="btn btn-sm btn-outline-secondary">รายปี</button>';
+          html += '<button class="btn btn-sm btn-outline-secondary">สัปดาห์นี้</button>';
+          html += '<button class="btn btn-sm btn-outline-secondary">เดือนนี้</button>';
+          html += '<button class="btn btn-sm btn-outline-secondary">ปีนี้</button>';
+          html += '<button class="btn btn-sm btn-outline-secondary">ปีก่อน</button>';
         html += '</div>';
         divPeriod.innerHTML = html;
         panel.appendChild(divPeriod);
@@ -445,124 +428,203 @@
             }
           }
         });
+      }
 
-        // HR
-        panel.appendChild(document.createElement('hr'));
-
-        var hTable = document.createElement('h2');
+      function appendTableLatestSale(panel) {
+        var hTable = document.createElement('h3');
         hTable.innerHTML = 'รายการจำหน่ายล่าสุด';
         panel.appendChild(hTable);
 
         var pTable = document.createElement('p');
-        pTable.innerHTML = manUtils.getGlobalVars('guideLatestSale');
+        pTable.innerHTML = manUtils.getGlobalVars('guideLatestSale').replace('[Number]', manUtils.getGlobalVars('latestSaleNum'));
         panel.appendChild(pTable);
 
         var table = document.createElement('table');
         table.className = 'table table-sm';
         panel.appendChild(table);
 
-        html = '<thead><tr>'
+        var html = '<thead><tr class="bg-light">'
           html += '<th class="text-center" scope="col">#</th>';
           html += '<th class="text-center" scope="col">วันที่</th>';
           html += '<th scope="col">ชื่อหนังสือ</th>';
           html += '<th class="text-center" scope="col">ยอดจำหน่าย (เล่ม)</th>';
-          html += '<th class="text-right" scope="col">ราคา (บ.)</th>';
+          html += '<th class="text-right" scope="col">ราคาปก (บ.)</th>';
           html += '<th class="text-right" scope="col">มูลค่าการขาย (บ.)</th>';
           html += '<th class="text-right" scope="col">ส่วนแบ่งรายได้ (บ.)</th>';
         html += '</tr></thead>';
         html += '<tbody>';
+        var n = 0;
         for (var i in arrSales) {
-          html += '<tr>';
-            html += '<td class="text-center" scope="row">' + Number(Number(i) + 1) +'</td>';
-            html += '<td class="text-center">' + arrSales[i].PaymentDate + '</td>';
-            html += '<td>' + arrSales[i].Title + '</td>';
-            html += '<td class="text-center">' + arrSales[i].Amount + '</td>';
-            html += '<td class="text-right">' + arrSales[i].Price + '</td>';
-            html += '<td class="text-right">' + arrSales[i].SubTotal + '</td>';
-            html += '<td class="text-right">' + arrSales[i].CopyrightShare + '</td>';
-          html += '</tr>';
-          if (i >= 20)
-            break;
+          if (arrSales[i].PaymentDate) {
+            html += '<tr>';
+              html += '<td class="text-center" scope="row">' + Number(Number(i) + 1) +'</td>';
+              html += '<td class="text-center">' + manUtils.formatDateThai(arrSales[i].PaymentDate) + '</td>';
+              html += '<td>' + arrSales[i].Title + '</td>';
+              html += '<td class="text-center">' + arrSales[i].Amount + '</td>';
+              html += '<td class="text-right">' + arrSales[i].Price + '</td>';
+              html += '<td class="text-right">' + arrSales[i].SubTotal + '</td>';
+              html += '<td class="text-right">' + arrSales[i].CopyrightShare + '</td>';
+            html += '</tr>';
+            if (++n >= manUtils.getGlobalVars('latestSaleNum'))
+              break;
+          }
         }
         html += '</tbody>'
         table.innerHTML = html;
-
       }
+
+      function appendTableOfPayment(panel) {
+        var hTable = document.createElement('h3');
+        hTable.innerHTML = 'รายการโอนค่าลิขสิทธิ์';
+        panel.appendChild(hTable);
+
+        var pTable = document.createElement('p');
+        pTable.innerHTML = manUtils.getGlobalVars('guidePayment').replace('[Number]', keyOwner.BillPeriod);
+        panel.appendChild(pTable);
+
+        var table = document.createElement('table');
+        table.className = 'table table-sm';
+        panel.appendChild(table);
+
+        var html = '<thead><tr class="bg-light">'
+          html += '<th class="text-center" scope="col">#</th>';
+          html += '<th class="text-center" scope="col">วันที่</th>';
+          html += '<th class="text-center" scope="col">เวลา</th>';
+          html += '<th class="text-right" scope="col">จำนวนเงิน</th>';
+          html += '<th class="text-center" scope="col">รายการ</th>';
+          html += '<th class="text-center" scope="col">เลขที่บัญชีโอนเข้า</th>';
+          html += '<th class="text-center" scope="col">ชื่อธนาคาร</th>';
+          //html += '<th class="text-center" scope="col">ภาพสลิปโอน</th>';
+        html += '</tr></thead>';
+        html += '<tbody>';
+        var share = 0;
+        for (var i in arrPayments) {
+          html += '<tr>';
+            html += '<td class="text-center" scope="row">' + Number(Number(i) + 1) +'</td>';
+            html += '<td class="text-center">' + manUtils.formatDateThai(arrPayments[i].PaymentDate) + '</td>';
+            html += '<td class="text-center">' + arrPayments[i].PaymentTime + '</td>';
+            html += '<td class="text-right">' + manUtils.formatNumber(arrPayments[i].Outcome, 0) + '</td>';
+            html += '<td class="text-center">' + arrPayments[i].Content + '</td>';
+            html += '<td class="text-center">' + arrPayments[i].BankAccountId + '</td>';
+            html += '<td class="text-center">' + arrPayments[i].BankName + '</td>';
+            //html += '<td class="text-center"><a href="' + arrPayments[i].ImageSlip + '" target="_blank"><i class="fa fa-image"></i></td>';
+          html += '</tr>';
+          share += Number(arrPayments[i].Outcome);
+        }
+        // Summary Row
+        html += '<tr>';
+          html += '<td class="text-center" scope="row"></td>';
+          html += '<td class="text-center"><h4>รวม</h4></td>';
+          html += '<td class="text-center"></td>';
+          html += '<td class="text-right"><h4>' + manUtils.formatNumber(share, 0) + '</h4></td>';
+          html += '<td class="text-center"></td>';
+          html += '<td class="text-center"></td>';
+          html += '<td class="text-center"></td>';
+          html += '<td class="text-center"></td>';
+        html += '</tr>';
+
+        html += '</tbody>'
+        table.innerHTML = html;
+      }
+
       function showProfile(panel) {
         document.getElementById('panel-header').innerHTML = 'ข้อมูลส่วนตัว';
         document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('guideProfile');
         panel.appendChild(document.createElement('hr'));
         if (keyOwner) {
           var data = {
-            Title: keyOwner.Title + keyOwner.FirstName + ' ' + keyOwner.LastName,
+            Title: manUtils.formatName(keyOwner.Title, keyOwner.FirstName, keyOwner.LastName),
             Description: keyOwner.Biography,
             imageURL: keyOwner.ImageProfile,
-            maxWidth: 300,
+            maxWidth: 280,
           };
 
           var html = '';
           html += '<ul class="list-group">';
             html += '<li class="list-group-item"><i class="fa fa-phone fa-lg"></i>&nbsp;&nbsp;' + keyOwner.Phone + ' <div class="badge badge-danger">งดเผยแพร่</div></li>';
             html += '<li class="list-group-item"><i class="fa fa-envelope fa-lg"></i>&nbsp;&nbsp;' + keyOwner.Email + ' <div class="badge badge-success">เผยแพร่</div></li>';
-            html += '<li class="list-group-item"><i class="fa fa-money fa-lg"></i>&nbsp;&nbsp;' + keyOwner.BankAccountId + ' ' + keyOwner.BankName + ' <div class="badge badge-danger">งดเผยแพร่</div></li>';
+            if (keyOwner.LineId) html += '<li class="list-group-item"><i class="fab fa-line fa-lg"></i>&nbsp;&nbsp;' + keyOwner.LineId + ' <div class="badge badge-success">เผยแพร่</div></li>';
+            html += '<li class="list-group-item"><i class="fa fa-money fa-lg"></i>&nbsp;&nbsp;' + keyOwner.BankAccountId + '&nbsp;&nbsp;' + keyOwner.BankName + ' <div class="badge badge-danger">งดเผยแพร่</div></li>';
+            html += '<li class="list-group-item"><i class="fa fa-calendar fa-lg"></i>&nbsp;&nbsp;รับส่วนแบ่งค่าลิขสิทธิ์ทุก ' + keyOwner.BillPeriod + ' เดือน</li>';
           html += '</ul>';
           data.Description += html;
           spawnMediaObject(panel, data);
 
           // HR
           panel.appendChild(document.createElement('hr'));
-        }
-      }
-      function showShop(panel) {
-        document.getElementById('panel-header').innerHTML = 'ร้านหนังสือ';
-        document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('guideShop');
-        panel.appendChild(document.createElement('hr'));
-        if (keyOwner) {
-          // Private Shop
-          var data = {
-            Title: "ร้านขายเป็นส่วนบุคคล",
-            Description: manUtils.getGlobalVars('guidePrivateShop'),
-            imageURL: keyOwner.PrivateShopURL,
-            maxWidth: 250,
-          };
-          data.Title += ' <div class="badge badge-warning">ขายเป็นส่วนบุคคล</div>';
 
-          var html = '';
-          html += '<p><ul class="list-group">';
-            html += '<li class="list-group-item">ลิงค์หน้าร้าน&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + keyOwner.PrivateShopURL + '">' + keyOwner.PrivateShopURL + '</a></li>';
-            html += '<li class="list-group-item">คิวอาร์โค้ด&nbsp;&nbsp;<i class="fa fa-qrcode fa-lg"></i>&nbsp;&nbsp;<a href="' + keyOwner.PrivateShopURL + '">' + keyOwner.PrivateShopURL + '</a></li>';
-          html += '</ul></p>';
-          html += '<div class="alert alert-danger">' + manUtils.getGlobalVars('guidePrivateShopURL') + '</div>';
-          data.Description += html;
-          spawnMediaObject(panel, data);
+          appendTableOfPayment(panel);
 
           // HR
           panel.appendChild(document.createElement('hr'));
+        }
+      }
 
-          // Public Shop
+      function showShop(panel) {
+        document.getElementById('panel-header').innerHTML = 'หน้าร้าน';
+        document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('guideShop');
+        panel.appendChild(document.createElement('hr'));
+        if (keyOwner) {
           var data = {
-            Title: "ร้านขายเป็นสาธารณะ",
+            Title: "",
             Description: manUtils.getGlobalVars('guidePublicShop'),
-            imageURL: keyOwner.PublicShopURL,
-            maxWidth: 250,
+            imageURL: keyOwner.ImagePublicShopQR,
+            maxWidth: 220,
           };
-          data.Title += ' <div class="badge badge-success">ขายเป็นสาธารณะ</div>';
+          data.Title += ' <div class="badge badge-success">ขายแบบสาธารณะ</div>';
 
           var html = '';
           html += '<p><ul class="list-group">';
-            html += '<li class="list-group-item">ลิงค์หน้าร้าน&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + keyOwner.PublicShopURL + '">' + keyOwner.PublicShopURL + '</a></li>';
-            html += '<li class="list-group-item">คิวอาร์โค้ด&nbsp;&nbsp;<i class="fa fa-qrcode fa-lg"></i>&nbsp;&nbsp;<a href=' + keyOwner.PublicShopURL + '">' + keyOwner.PublicShopURL + '</a></li>';
+            html += '<li class="list-group-item">ลิงก์หน้าร้าน&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + keyOwner.PublicShopURL + '" target="_blank">' + keyOwner.PublicShopURL + '</a></li>';
+            html += '<li class="list-group-item">ภาพคิวอาร์โค้ด&nbsp;&nbsp;<i class="fa fa-qrcode fa-lg"></i>&nbsp;&nbsp;<a href=' + keyOwner.ImagePublicShopQR + '" target="_blank">' + keyOwner.ImagePublicShopQR + '</a></li>';
           html += '</ul></p>';
           data.Description += html;
           spawnMediaObject(panel, data);
+        }
+      }
+
+      function showBook(panel) {
+        document.getElementById('panel-header').innerHTML = 'หนังสือ (' + arrProducts.length + ')';
+        document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('guideBook');
+        panel.appendChild(document.createElement('hr'));
+        if (keyOwner && arrProducts) {
+
+          var html = '';
+          for (var i in arrProducts) {
+            var data = {
+              Title: arrProducts[i].Title,
+              Description: arrProducts[i].Brief + '<p>' + arrProducts[i].Spec + '</p>',
+              imageURL: arrProducts[i].ImageFull,
+              maxWidth: 280,
+            };
+            if (arrProducts[i].Available == 'False')
+              data.Title += ' <div class="badge badge-danger">งดจำหน่าย</div>';
+            else {
+              data.Title += (arrProducts[i].PrivateSale == 'True')
+                   ? ' <div class="badge badge-warning">ขายเฉพาะบุคคล</div>'
+                   : ' <div class="badge badge-success">ขายแบบสาธารณะ</div>';
+            }
+            html = '<h4>' + arrProducts[i].Price + ' บ. <span class="text-muted"><small><small>ส่วนแบ่งค่าลิขสิทธิ์ ' + arrProducts[i].CopyrightRatio + '% (= ' + arrProducts[i].SharePerUnit + ' บ.)</small></small></span></h4>';
+            html += '<p><ul class="list-group">';
+              html += '<li class="list-group-item">ลิงก์สั่งซื้อ&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + arrProducts[i].PrivateBookURL + '" target="_blank">' + arrProducts[i].PrivateBookURL + '</a></li>';
+              html += '<li class="list-group-item">ภาพคิวอาร์โค้ด&nbsp;&nbsp;<i class="fa fa-qrcode fa-lg"></i>&nbsp;&nbsp;<a href="' + arrProducts[i].ImagePrivateBookQR + '" target="_blank">' + arrProducts[i].ImagePrivateBookQR + '</a></li>';
+            html += '</ul></p>';
+            data.Description += html;
+            spawnMediaObject(panel, data);
+
+            // HR
+            panel.appendChild(document.createElement('hr'));
+          }
         }
       }
 
       function showSidebarMenu(menuId) {
+        document.getElementById('menu-website').href = manUtils.getGlobalVars('websiteURL');
+
         var menuItems = [
-          {icon: 'fa-home', caption: 'สรุปรายงาน', name: 'main-dashboard', href: 'index.html?id=main-dashboard&key=' + manUtils.getParam('key')},
+          {icon: 'fa-home', caption: 'รายงานสรุป', name: 'main-dashboard', href: 'index.html?id=main-dashboard&key=' + manUtils.getParam('key')},
           {icon: 'fa-user', caption: 'ข้อมูลส่วนตัว', name: 'main-profile', href: 'index.html?id=main-profile&key=' + manUtils.getParam('key')},
-          {icon: 'fa-shopping-cart', caption: 'ร้านหนังสือ', name: 'main-shop', href: 'index.html?id=main-shop&key=' + manUtils.getParam('key')},
+          {icon: 'fa-shopping-cart', caption: 'หน้าร้าน', name: 'main-shop', href: 'index.html?id=main-shop&key=' + manUtils.getParam('key')},
           {icon: 'fa-book', caption: 'หนังสือ', name: 'main-book', href: 'index.html?id=main-book&key=' + manUtils.getParam('key')},
         ];
         var html = "";
@@ -585,11 +647,11 @@
         var html = '';
 
         html += '<div class="card mb-4 box-shadow">';
-          html += '<div class="card-header text-white bg-' + data.Color + '">';
-            html += '<h4 class="my-0 font-weight-normal">' + data.Title + '</h4>';
+          html += '<div class="card-header text-' + data.TextColor + ' bg-' + data.Color + '">';
+            html += '<h5 class="my-0 font-weight-normal">' + data.Title + '</h5>';
           html += '</div>';
           html += '<div class="card-body">';
-            html += '<h1 class="card-title pricing-card-title">' + data.Value + ' <small><small>' + data.Unit + '</small></small></h1>';
+            html += '<h1 class="card-title pricing-card-title"><span id="' + data.ElementID + '">' + data.Value + '</span> <small><small>' + data.Unit + '</small></small></h1>';
             //html += '<p class="card-text">' + data.Description + '</p>';
             html += '<p class="card-text"><small class="text-muted">' + data.Remark + '</small></p>';
           html += '</div>';
@@ -621,12 +683,12 @@
       window.addEventListener('load', (event) => {
         // GET GlobalVars
         // -- GET Author Info
-        fetch('https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc/tabs/GlobalVars')
+        fetch(sheetURL + '/tabs/GlobalVars')
         .then((response) => { return response.json(); })
         .then((myJson) => {
           globalVars = myJson;
 
-          loadContacts(manUtils.getParam('key'));
+          loadContacts(manUtils.decryptKey(manUtils.getParam('key')));
         })
         .catch((error) => { console.log(error); });
       });
