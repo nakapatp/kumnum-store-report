@@ -48,7 +48,7 @@
             <ul class="nav flex-column mb-2">
               <li class="nav-item">
                 <a class="nav-link" href="#" id="menu-website" target="_blank">
-                  <i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;เวบไซต์
+                  <i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;เว็บไซต์
                 </a>
               </li>
             </ul>
@@ -72,6 +72,7 @@
     <!-- <script src="js/popper.min.js"></script> -->
     <!-- <script src="js/holder.min.js"></script> -->
     <script src="js/bootstrap.min.js"></script>
+    <!-- <script src="js/moment.js"></script> -->
 
     <!-- Chart.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
@@ -105,7 +106,7 @@
         // Show Panel Content
         var iPanel = document.getElementById('panel-content');
         switch (menuId) {
-          case 'main-dashboard': loadPublisher(iPanel); break;
+          case 'main-dashboard': loadPayments(iPanel); break;
           case 'main-contact': loadContacts(iPanel); break;
           case 'main-book': loadProducts(iPanel); break;
           case 'main-order': loadOrders(iPanel); break;
@@ -448,7 +449,7 @@
         .catch((error) => { console.log(error); });
       }
 
-      function onVerifyPayment(orderId, datePayment) {
+      function onVerifyPayment(orderId, grandTotal, datePayment, timePayment) {
         // Update 'Orders'
         // -- Update 'Sales'
         // ---- completePurchase()
@@ -476,8 +477,7 @@
           )
           .then((response) => { return response.json(); })
           .then((data) => {
-            completePurchase(orderId, datePayment);
-            window.location.href = "admin.html?id=main-order&key=" + key;
+            completePurchase(orderId, grandTotal, datePayment, timePayment);
           })
           .catch((error) => { console.log(error); });
         })
@@ -506,68 +506,370 @@
         .catch((error) => { console.log(error); });
       }
 
-      function completePurchase(orderId, datePayment) {
-        // ---- Update 'Products'
-        // ------ Update 'Contacts' (Share)
-        // -------- Update 'Payments'
+      function completePurchase(orderId, grandTotal, datePayment, timePayment) {
+        // ---- Update 'Products'  (Amount, CopyrightShare)
+        // ---- Update 'Contacts' (SaleCount, ShareAwait)
+        // -------- Insert 'Payments' (PaymentDate, PaymentTime, OrderId, Income, Content)
         // ---------- Update 'Publisher'
         fetch(sheetURL + '/tabs/Sales/OrderId/*' + orderId + '*')
         .then((response) => { return response.json(); })
         .then((myJson) => {
+
+          var owner = new Array();
+          var publisher = 0;
+          var copyright = 0;
+          var platform = 0;
+          var production = 0;
+
           for (var i in myJson) {
 
+            var sale = myJson[i];
+            addSaleToProduct(sale.ProductId, sale.Amount);
+            Number(publisher) += Number(sale.PublisherShare);
+            Number(copyright) += Number(sale.CopyrightShare);
+            Number(platform) += Number(sale.PlatformShare);
+            Number(production) += Number(sale.ProductionCost);
+
+            if (!manUtils.arrayHasKeyValue(owner, 'ContactId', sale.ContactId)) {
+              var data = {
+                ContactId: sale.ContactId,
+                SaleCount: sale.Amount,
+                ShareAwait: sale.CopyrightShare,
+              };
+              owner.push(data);
+
+            } else {
+              for (var j in owner) {
+                if (owner[j].ContactId == sale.ContactId) {
+                  Number(owner[j].SaleCount) += Number(sale.Amount);
+                  Number(owner[j].ShareAwait) += Number(sale.CopyrightShare);
+                  break;
+                }
+              }
+            }
           }
+
+          for (var i in owner) {
+            addSaleToContact(owner[i].ContactId, owner[i].SaleCount, owner[i].ShareAwait);
+          }
+
+          // Insert 'Payments'
+          const trans = {
+            PaymentDate: datePayment,
+            PaymentTime: timePayment,
+            OrderId: orderId,
+            Income: grandTotal,
+            Content: 'คำสั่งซื้อ #' + orderId,
+            PublisherShare: publisher,
+            CopyrightShare: copyright,
+            PlatformShare: platform,
+            ProductionCost: production,
+          };
+          fetch(sheetURL + '/tabs/Payments', {
+            method: "POST",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(trans),
+          })
+          .then((response) => { return response.json(); })
+          .then((myJson) => {
+            //console.log('completePurchase()');
+            window.location.href = "admin.html?id=main-order&key=" + key;
+          })
+          .catch((error) => { console.log(error); });
         })
         .catch((error) => { console.log(error); });
       }
 
+      function addSaleToProduct(productId, num) {
+        // ---- Update 'Products'  (Amount, CopyrightShare)
+        fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*')
+        .then((response) => { return response.json(); })
+        .then((myJson) => {
+          fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*', {
+            method: "PATCH",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              Amount: Number(Number(myJson[0].Amount) + Number(num)),
+              CopyrightShare: Number(Number(myJson[0].CopyrightShare) + (num * myJson[0].SharePerUnit)),
+            }),
+          })
+          .then((response) => { return response.json(); })
+          .then((myJson) => {
+            //console.log('addSaleToProduct()');
+            //window.location.href = "admin.html?id=main-order&key=" + key;
+          })
+          .catch((error) => { console.log(error); });
+        })
+        .catch((error) => { console.log(error); });
+      }
+
+      function addSaleToContact(contactId, num, share) {
+        // ---- Update 'Contacts' (SaleCount, ShareAwait)
+        fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*')
+        .then((response) => { return response.json(); })
+        .then((myJson) => {
+          fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*', {
+            method: "PATCH",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              SaleCount: Number(myJson[0].SaleCount) + Number(num),
+              ShareAwait: Number(myJson[0].ShareAwait) + Number(share),
+            }),
+          })
+          .then((response) => { return response.json(); })
+          .then((myJson) => {
+            //console.log('addSaleToProduct()');
+            //window.location.href = "admin.html?id=main-order&key=" + key;
+          })
+          .catch((error) => { console.log(error); });
+        })
+        .catch((error) => { console.log(error); });
+      }
+
+      function onClickIncomeInterest() {
+        var amount = document.getElementById('income-interest').value;
+
+        if (amount > 0) {
+          var d = new Date();
+          var currentDate = d.toISOString().slice(0, 10);
+          var currentTime = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(11,16);
+
+          fetch(sheetURL + '/tabs/Payments', {
+            method: "POST",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               PaymentDate: currentDate,
+               PaymentTime: currentTime,
+               Income: amount,
+               Content: 'ดอกเบี้ย',
+            }),
+          })
+          .then((response) => { return response.json(); })
+          .then((myJson) => {
+
+            window.location.href = "admin.html?id=main-dashboard&key=" + key;
+          })
+          .catch((error) => { console.log(error); });
+        }
+      }
+
+      function onClickOutcomePublisher() {
+        var amount = document.getElementById('outcome-publisher').value;
+
+        if (amount > 0) {
+          var d = new Date();
+          var currentDate = d.toISOString().slice(0, 10);
+          var currentTime = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(11,16);
+
+          fetch(sheetURL + '/tabs/Payments', {
+            method: "POST",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               PaymentDate: currentDate,
+               PaymentTime: currentTime,
+               Outcome: amount,
+               Content: 'ส่วนแบ่งสำนักพิมพ์',
+            }),
+          })
+          .then((response) => { return response.json(); })
+          .then((myJson) => {
+
+            window.location.href = "admin.html?id=main-dashboard&key=" + key;
+          })
+          .catch((error) => { console.log(error); });
+        }
+      }
+
+      function onClickOutcomePlatform() {
+        var amount = document.getElementById('outcome-platform').value;
+
+        if (amount > 0) {
+          var d = new Date();
+          var currentDate = d.toISOString().slice(0, 10);
+          var currentTime = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(11,16);
+
+          fetch(sheetURL + '/tabs/Payments', {
+            method: "POST",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               PaymentDate: currentDate,
+               PaymentTime: currentTime,
+               Outcome: amount,
+               Content: 'ส่วนแบ่งแพลตฟอร์ม',
+            }),
+          })
+          .then((response) => { return response.json(); })
+          .then((myJson) => {
+
+            window.location.href = "admin.html?id=main-dashboard&key=" + key;
+          })
+          .catch((error) => { console.log(error); });
+        }
+      }
+
+      function onClickOutcomeCopyright(contact) {
+        if (contact.ShareAwait > 0) {
+          var d = new Date();
+          var currentDate = d.toISOString().slice(0, 10);
+          var currentTime = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(11,16);
+          var nextDate = new Date(d.setDate(d.getDate() + (contact.BillPeriod * 30)));
+
+          fetch(sheetURL + '/tabs/Payments', {
+            method: "POST",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               PaymentDate: currentDate,
+               PaymentTime: currentTime,
+               Outcome: contact.ShareAwait,
+               Content: 'ค่าลิขสิทธิ์ ID.' + contact.ContactId,
+               ContactId: contact.ContactId,
+               ContactName: manUtils.formatName(contact.Title, contact.FirstName, contact.LastName),
+               BankAccountId: contact.BankAccountId,
+               BankName: contact.BankName,
+            }),
+          })
+          .then((response) => { return response.json(); })
+          .then((myJson) => {
+
+            fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contact.ContactId + '*', {
+              method: "PATCH",
+              mode: "cors",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                 ShareReceived: Number(contact.ShareReceived) + Number(contact.ShareAwait),
+                 ShareAwait: "0",
+                 NextPaid: nextDate.toISOString().slice(0, 10),
+              }),
+            })
+            .then((response) => { return response.json(); })
+            .then((myJson) => {
+              window.location.href = "admin.html?id=main-contact&key=" + key;
+            })
+            .catch((error) => { console.log(error); });
+          })
+          .catch((error) => { console.log(error); });
+        }
+      }
+
       function showDashboard(panel) {
         // Copyright Share Report
-        document.getElementById('panel-header').innerHTML = 'เงินเข้า';
-        document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('loremShort');
+        document.getElementById('panel-header').innerHTML = 'รายรับ';
+        document.getElementById('panel-description').innerHTML = 'รายรับของแพลตฟอร์มมี 2 ทางได้แก่ รายได้จากยอดขาย <sup>1</sup> และ รายได้อื่น ๆ <sup>2</sup>';
 
         var deck = document.createElement('div');
         deck.className = 'card-deck mb-3 text-center';
         panel.appendChild(deck);
 
+        var bankBalance = 0;
+        var incomeMain = 0;
+        var incomeMisc = 0;
+
+        var outcomePublisher = 0;
+        var outcomeCopyright = 0;
+        var outcomePlatform = 0;
+
+        var sharePublisher = 0;
+        var shareCopyright = 0;
+        var sharePlatform = 0;
+
+        var collectiveIncomeMain = 0;
+        var collectiveIncomeMisc = 0;
+        var collectiveSharePublisher = 0;
+        var collectiveShareCopyright = 0;
+        var collectiveSharePlatform = 0;
+
+        var sumIncome = 0;
+        var sumOutcome = 0;
+
+        for (var i in arrPayments) {
+          if (arrPayments[i].Income > 0) {
+            if (arrPayments[i].Content.includes('คำสั่งซื้อ'))
+              collectiveIncomeMain += Number(arrPayments[i].Income);
+            else collectiveIncomeMisc += Number(arrPayments[i].Income);
+
+            collectiveSharePublisher += (Number(arrPayments[i].PublisherShare) + Number(arrPayments[i].ProductionCost));
+            collectiveShareCopyright += Number(arrPayments[i].CopyrightShare);
+            collectiveSharePlatform += Number(arrPayments[i].PlatformShare);
+
+            sumIncome += Number(arrPayments[i].Income);
+          }
+          if (arrPayments[i].Outcome > 0) {
+            if (arrPayments[i].Content.includes('สำนักพิมพ์'))
+              outcomePublisher += Number(arrPayments[i].Outcome);
+            else if (arrPayments[i].Content.includes('ค่าลิขสิทธิ์'))
+              outcomeCopyright += Number(arrPayments[i].Outcome);
+            else if (arrPayments[i].Content.includes('แพลตฟอร์ม'))
+              outcomePlatform += Number(arrPayments[i].Outcome);
+
+            sumOutcome += Number(arrPayments[i].Outcome);
+          }
+        }
+        bankBalance = sumIncome - sumOutcome;
+        sharePublisher = collectiveSharePublisher - outcomePublisher;
+        shareCopyright = collectiveShareCopyright - outcomeCopyright;
+        sharePlatform = collectiveSharePlatform - outcomePlatform;
+
         // Balance
         var data = {
           ElementID: 'bank-balance',
           Title: 'ยอดคงเหลือในบัญชี',
-          Value: manUtils.formatNumber(0, 0),
+          Value: manUtils.formatNumber(bankBalance, 0),
           Unit: 'บาท',
           TextColor: 'white',
           Color: 'success',
-          Remark: '= (1) + (2)',
+          Remark: '= ส่วนแบ่งรอโอน + ค่าจัดส่ง + ดอกเบี้ย',
         };
         spawnCard(deck, data);
 
         // Main Income
         var data = {
           ElementID: 'income-main',
-          Title: 'รายได้จากการขาย <sup>(1)</sup>',
-          Value: manUtils.formatNumber(0, 0),
+          Title: 'รายได้จากยอดขายสะสม <sup>1</sup>',
+          Value: manUtils.formatNumber(collectiveIncomeMain, 0),
           Unit: 'บาท',
           TextColor: 'black',
           Color: 'light',
-          Remark: 'รวมยอดโอนเข้าจากคำสั่งซื้อ (ราคาปก + ค่าจัดส่ง)',
+          Remark: 'รวมยอดโอนของคำสั่งซื้อ (รวมราคาปก + ค่าจัดส่ง)',
         };
         spawnCard(deck, data);
 
         // Misc. Income
         var data = {
           ElementID: 'income-misc',
-          Title: 'รายได้อื่น ๆ <sup>(2)</sup>',
-          Value: manUtils.formatNumber(0, 0),
+          Title: 'รายได้อื่น ๆ สะสม <sup>2</sup>',
+          Value: manUtils.formatNumber(collectiveIncomeMisc, 2),
           Unit: 'บาท',
           TextColor: 'black',
           Color: 'light',
-          Remark: 'รวมยอดโอนเข้าจากกรณีอื่น อาทิ ดอกเบี้ย',
+          Remark: 'หมายถึง "ดอกเบี้ย" เท่านั้น',
         };
         spawnCard(deck, data);
 
         var pShare = document.createElement('p');
-        pShare.innerHTML = '<h3>เงินออก</h3><p>' + manUtils.getGlobalVars('loremShort') + '</p>';
+        pShare.innerHTML = '<h3>รายจ่าย</h3><p>รายจ่ายของแพลตฟอร์มมี 3 ทาง ได้แก่ ส่วนแบ่งสำนักพิมพ์, ส่วนแบ่งค่าลิขสิทธิ์ และส่วนแบ่งแฟลตฟอร์ม</p>';
         panel.appendChild(pShare);
 
         var deckShare = document.createElement('div');
@@ -577,36 +879,36 @@
         // Publisher Share
         var data = {
           ElementID: 'share-publisher',
-          Title: 'ส่วนแบ่งสำนักพิมพ์',
-          Value: manUtils.formatNumber(0, 0),
+          Title: 'ส่วนแบ่งสำนักพิมพ์รอโอน <sup>3</sup>',
+          Value: manUtils.formatNumber(sharePublisher, 0),
           Unit: 'บาท',
           TextColor: 'white',
           Color: 'primary',
-          Remark: '= (1) + (2) - (3) - (4) หรือ เท่ากับ<br/>(ต้นทุนผลิต + ค่าจัดส่ง + % ค่าดำเนินการ)<br>หัก (ส่วนแบ่งค่าลิขสิทธิ์ + ส่วนแบ่งแพลตฟอร์ม)',
+          Remark: 'ส่วนแบ่งสำนักพิมพ์สะสม ' + manUtils.formatNumber(collectiveSharePublisher, 0) + ' บ.',
         };
         spawnCard(deckShare, data);
 
         // Copyright Share
         var data = {
           ElementID: 'share-copyright',
-          Title: 'ส่วนแบ่งค่าลิขสิทธิ์ <sup>(3)</sup>',
-          Value: manUtils.formatNumber(0, 0),
+          Title: 'ส่วนแบ่งค่าลิขสิทธิ์รอโอน <sup>4</sup>',
+          Value: manUtils.formatNumber(shareCopyright, 0),
           Unit: 'บาท',
           TextColor: 'white',
           Color: 'secondary',
-          Remark: 'ยอดส่วนแบ่งค่าลิขสิทธิ์รอโอน',
+          Remark: 'ส่วนแบ่งค่าลิขสิทธิ์สะสม ' + manUtils.formatNumber(collectiveShareCopyright, 0) + ' บ.',
         };
         spawnCard(deckShare, data);
 
         // Platform Share
         var data = {
           ElementID: 'share-platform',
-          Title: 'ส่วนแบ่งแพลตฟอร์ม <sup>(4)</sup>',
-          Value: manUtils.formatNumber(0, 0),
+          Title: 'ส่วนแบ่งแพลตฟอร์มรอโอน <sup>5</sup>',
+          Value: manUtils.formatNumber(sharePlatform, 0),
           Unit: 'บาท',
           TextColor: 'white',
           Color: 'dark',
-          Remark: 'ยอดส่วนแบ่งแพลตฟอร์มรอโอน',
+          Remark: 'ส่วนแบ่งแพลตฟอร์มสะสม ' + manUtils.formatNumber(collectiveSharePlatform, 0) + ' บ.',
         };
         spawnCard(deckShare, data);
 
@@ -618,7 +920,7 @@
         panel.appendChild(hTable);
 
         var pTableGuide = document.createElement('p');
-        pTableGuide.innerHTML = manUtils.getGlobalVars('loremShort');
+        pTableGuide.innerHTML = 'บันทึกรายรับ-รายจ่ายของแพลตฟอรม เพื่อกระทบยอดกับยอดบัญชีเงินฝาก';
         panel.appendChild(pTableGuide);
 
         var table = document.createElement('div');
@@ -630,22 +932,48 @@
             columns:[
               {title:"วันที่", width:100, field:"PaymentDate", headerFilter:"input"},
               {title:"เวลา", hozAlign:"right", field:"PaymentTime", hozAlign:"center"},
-              {title:"เลขที่คำสั่ง", width:100, field:"OrderId"},
-              {title:"เข้า", hozAlign:"right", field:"Income"},
-              {title:"ออก", hozAlign:"right", field:"Outcome"},
+              {title:"เลขที่คำสั่ง", width:110, field:"OrderId"},
+              {title:"รับ", hozAlign:"right", field:"Income", bottomCalc:"sum"},
+              {title:"จ่าย", hozAlign:"right", field:"Outcome", bottomCalc:"sum"},
               {title:"รายการ", width:200, field:"Content", headerFilter:"input"},
-              {title:"ผู้โอน/รับโอน", width:130, field:"ContactName", headerFilter:"input"},
-              {title:"เลขที่บัญชี", width:120, field:"BankAccountId"},
+              {title:"ผู้โอน/รับโอน", width:150, field:"ContactName", headerFilter:"input"},
+              {title:"เลขที่บัญชี", width:130, field:"BankAccountId"},
               {title:"ช่องทาง", width:100, field:"BankName"},
             ],
         });
 
-        var cmdDiv = document.createElement('p');
+        // HR
+        panel.appendChild(document.createElement('hr'));
+
+        var hCommand = document.createElement('h3');
+        hCommand.innerHTML = 'เพิ่มรายการบัญชี';
+        panel.appendChild(hCommand);
+
+        var cmdDiv = document.createElement('div');
+        cmdDiv.className = "row";
         var html = "";
-        html += '<p><h3>เพิ่มรายการบัญชี</h3>';
-        html += '<button type="button" class="btn btn-outline-secondary">รับดอกเบี้ย</button>';
-        html += '&nbsp;&nbsp;<button type="button" class="btn btn-dark">จ่ายส่วนแบ่งแพลตฟอร์ม</button>';
-        html += '</p>';
+
+        html += '<div class="col-md-4">';
+          html += '<div class="input-group">';
+            html += '<input type="input" class="form-control" id="income-interest" placeholder="ระบุจำนวน">';
+            html += '<div class="input-group-append"><button class="btn btn-outline-secondary" onclick="onClickIncomeInterest()">(รับ) ดอกเบี้ย</button></div>';
+          html += '</div>';
+        html += '</div>';
+
+        html += '<div class="col-md-4">';
+          html += '<div class="input-group">';
+            html += '<input type="input" class="form-control" id="outcome-publisher" placeholder="ระบุจำนวน">';
+            html += '<div class="input-group-append"><button class="btn btn-primary" onclick="onClickOutcomePublisher()">(จ่าย) ส่วนแบ่งสำนักพิมพ์</button></div>';
+          html += '</div>';
+        html += '</div>';
+
+        html += '<div class="col-md-4">';
+          html += '<div class="input-group">';
+            html += '<input type="input" class="form-control" id="outcome-platform" placeholder="ระบุจำนวน">';
+            html += '<div class="input-group-append"><button class="btn btn-dark" onclick="onClickOutcomePlatform()">(จ่าย) ส่วนแบ่งแพลตฟอร์ม</button></div>';
+          html += '</div>';
+        html += '</div>';
+
         cmdDiv.innerHTML = html;
         panel.appendChild(cmdDiv);
 
@@ -678,7 +1006,7 @@
         var data = {
           ElementID: 'application-approval',
           Title: 'รออนุมัติใบสมัคร',
-          Value: manUtils.formatNumber(29, 0),
+          Value: manUtils.formatNumber(0, 0),
           Unit: 'ราย',
           TextColor: 'white',
           Color: 'primary',
@@ -690,7 +1018,7 @@
         var data = {
           ElementID: 'active-contacts',
           Title: 'จำนวนนักเขียน',
-          Value: manUtils.formatNumber(10, 0),
+          Value: manUtils.formatNumber(0, 0),
           Unit: 'คน',
           TextColor: 'white',
           Color: 'success',
@@ -731,6 +1059,8 @@
               }},
               {title:"รอบหน้า", field:"NextPaid", width:100, headerFilter:"input"},
               {title:"โอน", formatter:thumbsUpIcon, hozAlign:"center", cellClick:function(e, cell){
+                if (cell.getRow().getData().ShareAwait > 0)
+                  onClickOutcomeCopyright(cell.getRow().getData());
                 //console.log(cell);
                 //window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().ContactId);
               }},
@@ -856,7 +1186,7 @@
                 if ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                     || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')) {
                 } else {
-                  onVerifyPayment(cell.getRow().getData().OrderId, cell.getRow().getData().PaymentDate);
+                  onVerifyPayment(cell.getRow().getData().OrderId, cell.getRow().getData().GrandTotal, cell.getRow().getData().PaymentDate, cell.getRow().getData().PaymentTime);
                 }
               }},
               {formatter:rejectIcon, hozAlign:"center", cellClick:function(e, cell){
@@ -866,14 +1196,12 @@
                   onRejectPayment(cell.getRow().getData().OrderId);
                 }
               }},
-              {title:"บ.", width:50, hozAlign:"right", formatter:function(cell, formatterParams){
-                 return manUtils.formatNumber(cell.getRow().getData().GrandTotal, 0);
-              }},
+              {title:"บ.", width:50, hozAlign:"right", field:"GrandTotal"},
               {title:"วันแจ้งโอน", width:100, hozAlign:"center", field:"PaymentDate", headerFilter:"input"},
               {title:"เวลา", hozAlign:"center", field:"PaymentTime"},
               {title:"", field:"PaymentVerified", hozAlign:"center", formatter:"tickCross"},
               {formatter:printIcon, hozAlign:"center", cellClick:function(e, cell){
-                window.open("https://i.imgur.com/5hGMMJz.jpg");
+                window.open(manUtils.getGlobalVars('invoiceURL') + '?id=' + cell.getRow().getData().OrderId);
               }},
               {title:"เลขที่พัสดุ", width:100, field:"TrackingCode", editor:"input", cellEdited:function(cell){
                 if (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
@@ -921,7 +1249,7 @@
               {title:"ชื่อหนังสือ", width:250, field:"Title", headerFilter:"input"},
               {title:"ผู้เขียน", width:180, field:"Author", headerFilter:"input"},
               {title:"ซื้อ", width:60, field:"Amount", hozAlign:"center"},
-              {title:"บ.", width:60, field:"Price", hozAlign:"center"},
+              {title:"บ.", width:60, field:"Price", hozAlign:"right"},
               {title:"รวม", width:70, field:"SubTotal", hozAlign:"right"},
             ],
         });
@@ -993,7 +1321,6 @@
 
       window.addEventListener('load', (event) => {
         // GET GlobalVars
-        // -- GET Author Info
         fetch(sheetURL + '/tabs/GlobalVars')
         .then((response) => { return response.json(); })
         .then((myJson) => {

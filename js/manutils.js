@@ -6,6 +6,15 @@ var manUtils = (function() {
   // Public methods and properties
   var obj = {};
 
+  obj.arrayHasKeyValue = function(arr, key, value) {
+    if (arr.length > 0) {
+      for (var i in arr) {
+        if (arr[i][key] == value)
+          return true;
+      }
+    }
+    return false;
+  };
   obj.decryptKey = function(key) {
     var raw = key;
 

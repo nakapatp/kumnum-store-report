@@ -45,7 +45,7 @@
             <ul class="nav flex-column mb-2">
               <li class="nav-item">
                 <a class="nav-link" href="#" id="menu-website" target="_blank">
-                  <i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;เวบไซต์
+                  <i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;เว็บไซต์
                 </a>
               </li>
             </ul>
@@ -152,6 +152,7 @@
         })
         .then((myJson) => {
           arrProducts = myJson;
+
           loadSales(contactId);
         })
         .catch((error) => { console.log(error); });
@@ -169,7 +170,46 @@
         })
         .then((myJson) => {
           arrSales = myJson;
-          init();
+
+          // Reconcile SaleCount, ShareReceived, ShareAwait
+          if (arrPayments.length == 0) {
+            init();
+
+          } else {
+            var count = 0;
+            var received = 0;
+            var pending = 0;
+
+            for (var i in arrSales) {
+              count += Number(arrSales[i].Amount);
+              pending += Number(arrSales[i].CopyrightShare)
+            }
+            for (var i in arrPayments) {
+             received += Number(arrPayments[i].Outcome);
+            }
+
+            fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*', {
+              method: "PATCH",
+              mode: "cors",
+              headers: {
+               "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+               SaleCount: count,
+               ShareReceived: received,
+               ShareAwait: pending - received,
+              }),
+            })
+            .then((response) => { return response.json(); })
+            .then((myJson) => {
+              keyOwner.SaleCount = count;
+              keyOwner.ShareReceived = received;
+              keyOwner.ShareAwait = pending;
+
+              init();
+            })
+            .catch((error) => { console.log(error); });
+          }
         })
         .catch((error) => { console.log(error); });
       }
@@ -177,7 +217,7 @@
       function showDashboard(panel) {
         // Copyright Share Report
         document.getElementById('panel-header').innerHTML = 'รายงานสรุปการจัดจำหน่าย';
-        document.getElementById('panel-description').innerHTML = 'ของ ' + manUtils.formatName(keyOwner.Title, keyOwner.FirstName, keyOwner.LastName);
+        document.getElementById('panel-description').innerHTML = 'หนังสือของ ' + manUtils.formatName(keyOwner.Title, keyOwner.FirstName, keyOwner.LastName);
         //panel.appendChild(document.createElement('hr'));
 
         var deck = document.createElement('div');
@@ -210,7 +250,7 @@
           Width: 120,
           TextColor: 'white',
           Color: 'success',
-          Remark: 'นับเฉพาะรายการที่ชำระเงินเสร็จสมบูรณ์',
+          Remark: 'ดูรายการรับโอนค่าลิขสิทธิ์ได้ที่ <i class="fa fa-book"></i> ข้อมูลส่วนตัว',
         };
         spawnCard(deck, data);
 
@@ -225,7 +265,7 @@
           Width: 120,
           TextColor: 'black',
           Color: 'warning',
-          Remark: 'รอบจ่ายครั้งต่อไป ' + manUtils.formatDateThai(keyOwner.NextPaid),
+          Remark: 'รอบรับครั้งต่อไปวันที่ ' + manUtils.formatDateThai(keyOwner.NextPaid),
         };
         spawnCard(deck, data);
 
@@ -571,7 +611,7 @@
             imageURL: keyOwner.ImagePublicShopQR,
             maxWidth: 220,
           };
-          data.Title += ' <div class="badge badge-success">ขายแบบสาธารณะ</div>';
+          //data.Title += ' <div class="badge badge-success">ขายแบบสาธารณะ</div>';
 
           var html = '';
           html += '<p><ul class="list-group">';
@@ -580,6 +620,31 @@
           html += '</ul></p>';
           data.Description += html;
           spawnMediaObject(panel, data);
+
+          // HR
+          panel.appendChild(document.createElement('hr'));
+
+          var data = {
+            Title: "",
+            Description: manUtils.getGlobalVars('guidePrivateSale'),
+            imageURL: "https://i.imgur.com/UliF0me.png",
+            maxWidth: 220,
+          };
+          data.Title += ' <div class="badge badge-warning">ขายเฉพาะบุคคล</div>';
+          spawnMediaObject(panel, data);
+
+          // HR
+          panel.appendChild(document.createElement('hr'));
+
+          var data = {
+            Title: "",
+            Description: manUtils.getGlobalVars('guideNotAvailable'),
+            imageURL: "https://i.imgur.com/vPtXSdd.png",
+            maxWidth: 220,
+          };
+          data.Title += ' <div class="badge badge-danger">งดจำหน่าย</div>';
+          spawnMediaObject(panel, data);
+
         }
       }
 
@@ -593,7 +658,7 @@
           for (var i in arrProducts) {
             var data = {
               Title: arrProducts[i].Title,
-              Description: arrProducts[i].Brief + '<p>' + arrProducts[i].Spec + '</p>',
+              Description: arrProducts[i].Brief + '<p style="color:#ccc">' + arrProducts[i].Spec + '</p>',
               imageURL: arrProducts[i].ImageFull,
               maxWidth: 280,
             };
