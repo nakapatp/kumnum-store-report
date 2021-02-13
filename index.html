@@ -7,7 +7,7 @@
     <meta name="author" content="">
     <link rel="icon" href="img/favicon.ico">
 
-    <title>KumNum Publishing Online Report</title>
+    <title>ร้านหนังสือ "คำนำ" - หน้ารายงาน</title>
 
     <!-- Bootstrap core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -109,12 +109,9 @@
       function loadContacts(contactId) {
         // GET Author Info
         fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*')
-        .then((response) => {
-            return response.json();
-        })
+        .then((response) => { return response.json(); })
         .then((myJson) => {
           keyOwner = myJson[0];
-
           loadPayments(contactId);
         })
         .catch((error) => { console.log(error); });
@@ -123,14 +120,12 @@
       function loadPayments(contactId) {
         // GET Author Info
         fetch(sheetURL + '/tabs/Payments/ContactId/*' + contactId + '*')
-        .then((response) => {
-            return response.json();
-        })
+        .then((response) => { return response.json(); })
         .then((myJson) => {
           arrPayments = myJson;
 
-          if (manUtils.getParam('id') == 'main-dashboard'
-              || manUtils.getParam('id') == 'main-book' ) {
+          if (menuId == 'main-dashboard'
+              || menuId == 'main-book' ) {
             loadProducts(contactId);
           } else {
             init();
@@ -140,13 +135,8 @@
       }
 
       function loadProducts(contactId) {
-        var fetchUrl = sheetURL + '/tabs/Products';
-        if (contactId) fetchUrl += '/ContactId/*' + contactId + '*';
-        //if (true) fetchUrl += '/Highlight/*True*'; // {DebugPoint}
-        //if (manUtils.getParam('book')) fetchUrl += '/ProductId/*' + manUtils.getParam('book') + '*'; // {DebugPoint}
-
         // GET Author's Collections
-        fetch(fetchUrl)
+        fetch(sheetURL + '/tabs/Products/ContactId/*' + contactId + '*')
         .then((response) => {
             return response.json();
         })
@@ -159,12 +149,8 @@
       }
 
       function loadSales(contactId) {
-        var fetchUrl = sheetURL + '/tabs/Sales/ContactId/*' + keyOwner.ContactId + '*';
-        //if (true) fetchUrl += '/Highlight/*True*'; // {DebugPoint}
-        //if (manUtils.getParam('book')) fetchUrl += '/ProductId/*' + manUtils.getParam('book') + '*'; // {DebugPoint}
-
         // GET Author's Collections
-        fetch(fetchUrl)
+        fetch(sheetURL + '/tabs/Sales/ContactId/*' + keyOwner.ContactId + '*')
         .then((response) => {
             return response.json();
         })
@@ -571,6 +557,7 @@
         document.getElementById('panel-header').innerHTML = 'ข้อมูลส่วนตัว';
         document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('guideProfile');
         panel.appendChild(document.createElement('hr'));
+
         if (keyOwner) {
           var data = {
             Title: manUtils.formatName(keyOwner.Title, keyOwner.FirstName, keyOwner.LastName),
@@ -604,14 +591,15 @@
         document.getElementById('panel-header').innerHTML = 'หน้าร้าน';
         document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('guideShop');
         panel.appendChild(document.createElement('hr'));
+
         if (keyOwner) {
           var data = {
             Title: "",
             Description: manUtils.getGlobalVars('guidePublicShop'),
-            imageURL: keyOwner.ImagePublicShopQR,
+            imageURL: "https://i.imgur.com/uW9VPQH.png",
             maxWidth: 220,
           };
-          //data.Title += ' <div class="badge badge-success">ขายแบบสาธารณะ</div>';
+          data.Title += ' <div class="badge badge-success">ขายแบบสาธารณะ</div>';
 
           var html = '';
           html += '<p><ul class="list-group">';
@@ -644,7 +632,6 @@
           };
           data.Title += ' <div class="badge badge-danger">งดจำหน่าย</div>';
           spawnMediaObject(panel, data);
-
         }
       }
 
@@ -652,13 +639,14 @@
         document.getElementById('panel-header').innerHTML = 'หนังสือ (' + arrProducts.length + ')';
         document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('guideBook');
         panel.appendChild(document.createElement('hr'));
+
         if (keyOwner && arrProducts) {
 
           var html = '';
           for (var i in arrProducts) {
             var data = {
               Title: arrProducts[i].Title,
-              Description: arrProducts[i].Brief + '<p style="color:#ccc">' + arrProducts[i].Spec + '</p>',
+              Description: arrProducts[i].Brief + '<p style="color:#ccc; font-weight:300">' + arrProducts[i].Spec + '</p>',
               imageURL: arrProducts[i].ImageFull,
               maxWidth: 280,
             };
@@ -729,6 +717,7 @@
         var media = document.createElement('div');
         media.className = "media";
         var img = document.createElement('img');
+        //img.id = "qrcode-shop";
         img.className = "mr-3";
         img.src = data.imageURL;
         img.style = "max-width:" + data.maxWidth + 'px;';
