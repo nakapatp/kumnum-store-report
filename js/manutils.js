@@ -54,7 +54,7 @@ var manUtils = (function() {
   };
   obj.formatPhoneNumber = function(number) {
     var str = number.replaceAll('-', '');
-    return str.slice(0,3) + '-' + str.slice(4,6) + '-' + str.slice(7,10);
+    return str.slice(0,3) + '-' + str.slice(3,6) + '-' + str.slice(6,10);
   };
   obj.generateRandomLetter = function () {
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
