@@ -36,7 +36,7 @@
       <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="https://store.kumnum.com">ร้านหนังสือ "คำนำ"</a>
     </nav>
 
-    <div class="container-fluid">
+    <div class="container-fluid" id="container-main">
       <div class="row">
         <!-- Sidebar -->
         <nav class="col-md-2 d-none d-md-block bg-light sidebar">
@@ -63,7 +63,8 @@
         </main>
       </div>
     </div>
-
+    <!-- 404 Page -->
+    <div class="container" id="container-404">
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
@@ -101,19 +102,34 @@
 
       function init() {
 
-        showSidebarMenu(menuId);
+        if (key == manUtils.getGlobalVars('keySuperAdmin')
+            || key == manUtils.getGlobalVars('keyPublisher')
+            || key == manUtils.getGlobalVars('keyAdmin')
+            || key == manUtils.getGlobalVars('keyViewer')) {
 
-        // Show Panel Content
-        var iPanel = document.getElementById('panel-content');
-        switch (menuId) {
-          case 'main-dashboard': loadPayments(iPanel); break;
-          case 'main-contact': loadContacts(iPanel); break;
-          case 'main-book': loadProducts(iPanel); break;
-          case 'main-order': loadOrders(iPanel); break;
-          case 'main-sale': loadSales(iPanel); break;
-          default:
+          showSidebarMenu(menuId);
+
+          // Show Panel Content
+          var iPanel = document.getElementById('panel-content');
+          switch (menuId) {
+            case 'main-dashboard': loadPayments(iPanel); break;
+            case 'main-contact': loadContacts(iPanel); break;
+            case 'main-book': loadProducts(iPanel); break;
+            case 'main-order': loadOrders(iPanel); break;
+            case 'main-sale': loadSales(iPanel); break;
+            default:
+          }
+        } else {
+          showPage404();
         }
         document.getElementById('overlay').remove();
+      }
+
+      function showPage404() {
+        document.getElementById('container-main').style.display = 'none';
+        var desc = 'คุณต้องการ <span class="text-primary"><i class="fa fa-key"></i> กุญแจลับ</span> เพื่อเข้าถึงและจัดการเนื้อหาส่วนนี้ได้<br/>';
+        //desc += 'โปรดตรวจสอบอีเมลดังกล่าว หรือหากยังไม่ได้รับอีเมลยืนยัน กรุณาติดต่อเจ้าหน้าที่ของ "คำนำ" ที่ดูแลคุณอยู่';
+        document.getElementById('container-404').innerHTML = manUtils.getHTML404('ขออภัย!', 'เราไม่พบข้อมูลที่คุณกำลังมองหา', desc);
       }
 
       function loadPayments(iPanel) {
