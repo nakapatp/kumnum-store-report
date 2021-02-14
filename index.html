@@ -126,7 +126,8 @@
         .then((myJson) => {
           keyOwner = myJson[0];
 
-          if (keyOwner == null) {
+          if (keyOwner == null
+              || key == null || key == '' || key == 0) {
             showPage404();
           } else {
             loadPayments(keyOwner.ContactId);
