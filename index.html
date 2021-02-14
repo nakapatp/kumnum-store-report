@@ -644,11 +644,13 @@
 
           var html = '';
           for (var i in arrProducts) {
+            var desc = arrProducts[i].Brief;
+            desc += '<p style="color:#ccc; font-weight:300">' + arrProducts[i].Spec + '</p>';
             var data = {
               Title: arrProducts[i].Title,
-              Description: arrProducts[i].Brief + '<p style="color:#ccc; font-weight:300">' + arrProducts[i].Spec + '</p>',
+              Description: desc,
               imageURL: arrProducts[i].ImageFull,
-              maxWidth: 280,
+              maxWidth: 300,
             };
             if (arrProducts[i].Available == 'False')
               data.Title += ' <div class="badge badge-danger">งดจำหน่าย</div>';
@@ -657,7 +659,8 @@
                    ? ' <div class="badge badge-warning">ขายเฉพาะบุคคล</div>'
                    : ' <div class="badge badge-success">ขายแบบสาธารณะ</div>';
             }
-            html = '<h4>' + arrProducts[i].Price + ' บ. <span class="text-muted"><small><small>ส่วนแบ่งค่าลิขสิทธิ์ ' + arrProducts[i].CopyrightRatio + '% (= ' + arrProducts[i].SharePerUnit + ' บ.)</small></small></span></h4>';
+            html = '<h4>' + arrProducts[i].Price + ' บ.</h4>';
+            html += '<p><span>ส่วนแบ่งค่าลิขสิทธิ์ ' + arrProducts[i].CopyrightRatio + '% (= ' + arrProducts[i].SharePerUnit + ' บ.)</p>';
             html += '<p><ul class="list-group">';
               html += '<li class="list-group-item">ลิงก์สั่งซื้อ&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + arrProducts[i].PrivateBookURL + '" target="_blank">' + arrProducts[i].PrivateBookURL + '</a></li>';
               html += '<li class="list-group-item">ภาพคิวอาร์โค้ด&nbsp;&nbsp;<i class="fa fa-qrcode fa-lg"></i>&nbsp;&nbsp;<a href="' + arrProducts[i].ImagePrivateBookQR + '" target="_blank">' + arrProducts[i].ImagePrivateBookQR + '</a></li>';
