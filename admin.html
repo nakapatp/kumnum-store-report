@@ -228,21 +228,22 @@
       };
       // Generate print icon
       var printIcon = function(cell, formatterParams){
-          return (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์') ? "<i class='fa fa-print'></i>" : '';
+          var icon = (cell.getRow().getData().TrackingCode == '') ? '<span class="text-primary"><i class="fa fa-print"></i></span>' : '<i class="fa fa-print"></i>';
+          return (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์') ? icon : '';
       };
       // Generate reject icon
       var rejectIcon = function(cell, formatterParams){
           return ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                   || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน'))
                 ? ''
-                : (cell.getRow().getData().VerifyRejected  == 1) ? "<i class='fa fa-times'></i>" : "<i class='fa fa-thumbs-down'></i>";
+                : (cell.getRow().getData().VerifyRejected  == 1) ? "<i class='fa fa-times'></i>" : '<span class="text-danger"><i class="fa fa-thumbs-down"></i></span>';
       };
       // Generate confirm icon
       var verifyIcon = function(cell, formatterParams){
           return ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                   || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน'))
                   ? ''
-                  : (cell.getRow().getData().PaymentVerified  == 1) ? "<i class='fa fa-check'></i>" : "<i class='fa fa-thumbs-up'></i>";
+                  : (cell.getRow().getData().PaymentVerified  == 1) ? "<i class='fa fa-check'></i>" : '<span class="text-danger"><i class="fa fa-thumbs-up"></i></span>';
       };
 
       function swapHighlight(productId, value) {
@@ -457,8 +458,12 @@
             } else {
               for (var j in owner) {
                 if (owner[j].ContactId == sale.ContactId) {
-                  owner[j].SaleCount += Number(sale.Amount);
-                  owner[j].ShareAwait += Number(sale.CopyrightShare);
+                  var count = Number(owner[j].SaleCount);
+                  var share = Number(owner[j].ShareAwait);
+                  count += Number(sale.Amount);
+                  share += Number(sale.CopyrightShare);
+                  owner[j].SaleCount = count;
+                  owner[j].ShareAwait = share;
                   break;
                 }
               }
@@ -650,7 +655,8 @@
           var d = new Date();
           var currentDate = d.toISOString().slice(0, 10);
           var currentTime = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(11,16);
-          var nextDate = new Date(d.setDate(d.getDate() + (contact.BillPeriod * 30)));
+          var billDate = new Date(contact.NextPaid);
+          var nextDate = new Date(billDate.setDate(billDate.getDate() + (contact.BillPeriod * 30)));
 
           fetch(sheetURL + '/tabs/Payments', {
             method: "POST",
@@ -852,7 +858,7 @@
             columns:[
               {title:"วันที่", width:100, field:"PaymentDate", headerFilter:"input"},
               {title:"เวลา", hozAlign:"right", field:"PaymentTime", hozAlign:"center"},
-              {title:"เลขที่คำสั่ง", width:110, field:"OrderId"},
+              {title:"เลขที่คำสั่ง", width:120, field:"OrderId"},
               {title:"รับ", hozAlign:"right", field:"Income", bottomCalc:"sum"},
               {title:"จ่าย", hozAlign:"right", field:"Outcome", bottomCalc:"sum"},
               {title:"รายการ", width:200, field:"Content", headerFilter:"input"},
@@ -997,6 +1003,9 @@
               }},
             ],
         });
+
+        // HR
+        panel.appendChild(document.createElement('hr'));
       }
 
       function showBooks(panel) {
@@ -1051,6 +1060,9 @@
               }},
             ],
         });
+
+        // HR
+        panel.appendChild(document.createElement('hr'));
       }
 
       function showOrders(panel) {
@@ -1127,7 +1139,7 @@
               {formatter:viewIcon, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('checkoutURL') + "?id=" + cell.getRow().getData().OrderId);
               }},
-              {title:"เลขที่คำสั่ง", width:100, field:"OrderId"},
+              {title:"เลขที่คำสั่ง", width:120, field:"OrderId"},
               {title:"สถานะคำสั่ง", width:180, field:"OrderStatus", editor:"select", editorParams:{"ป้อนข้อมูลจัดส่ง":"ป้อนข้อมูลจัดส่ง", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}, headerFilter:true, headerFilterParams:{"ป้อนข้อมูลจัดส่ง":"ป้อนข้อมูลจัดส่ง", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}},
               {formatter:verifyIcon, hozAlign:"center", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
@@ -1155,7 +1167,7 @@
               }},
               {title:"บ.", width:50, hozAlign:"right", field:"GrandTotal"},
               {title:"วันแจ้งโอน", width:100, hozAlign:"center", field:"PaymentDate", headerFilter:"input"},
-              {title:"เวลา", hozAlign:"center", field:"PaymentTime"},
+              {hozAlign:"center", field:"PaymentTime"},
               {title:"", field:"PaymentVerified", hozAlign:"center", formatter:"tickCross"},
               {formatter:printIcon, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('invoiceURL') + '?id=' + cell.getRow().getData().OrderId);
@@ -1193,6 +1205,9 @@
               }},
             ],
         });
+
+        // HR
+        panel.appendChild(document.createElement('hr'));
       }
 
       function showSales(panel) {
@@ -1220,6 +1235,9 @@
               {title:"รวม", width:70, field:"SubTotal", hozAlign:"right"},
             ],
         });
+
+        // HR
+        panel.appendChild(document.createElement('hr'));
       }
 
       function showSidebarMenu(menuId) {
