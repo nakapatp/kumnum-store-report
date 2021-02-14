@@ -33,7 +33,7 @@
     <div class="overlay" id="overlay"></div>
 
     <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
-      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">ร้านหนังสือ "คำนำ"</a>
+      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="https://store.kumnum.com">ร้านหนังสือ "คำนำ"</a>
     </nav>
 
     <div class="container-fluid">
@@ -88,11 +88,11 @@
 
     <!-- Dashboard JavaScript -->
     <script type="text/javascript">
-      var sheetURL = 'https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc';
+      const sheetURL = 'https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc'; // Production
+      //const sheetURL = 'https://sheet.best/api/sheets/86299b5c-1850-4f51-b969-a44721bfe390'; // Dev
       var menuId = (manUtils.getParam('id') == null || manUtils.getParam('id') == "") ? 'main-dashboard' : manUtils.getParam('id');
       var key = manUtils.getParam('key');
       var globalVars = null;
-      var arrPublisher = null;
       var arrPayments = null;
       var arrContacts = null;
       var arrProducts = null;
@@ -114,20 +114,6 @@
           default:
         }
         document.getElementById('overlay').remove();
-      }
-
-      function loadPublisher(iPanel) {
-        // GET Author Info
-        fetch(sheetURL + '/tabs/Publisher')
-        .then((response) => {
-            return response.json();
-        })
-        .then((myJson) => {
-          arrPublisher = myJson;
-
-          loadPayments(iPanel)
-        })
-        .catch((error) => { console.log(error); });
       }
 
       function loadPayments(iPanel) {
@@ -159,13 +145,8 @@
       }
 
       function loadProducts(iPanel) {
-        var fetchUrl = sheetURL + '/tabs/Products';
-        //if (contactId) fetchUrl += '/ContactId/*' + contactId + '*';
-        //if (true) fetchUrl += '/Highlight/*True*'; // {DebugPoint}
-        //if (manUtils.getParam('book')) fetchUrl += '/ProductId/*' + manUtils.getParam('book') + '*'; // {DebugPoint}
-
         // GET Author's Collections
-        fetch(fetchUrl)
+        fetch(sheetURL + '/tabs/Products')
         .then((response) => {
             return response.json();
         })
@@ -178,12 +159,8 @@
       }
 
       function loadOrders(iPanel) {
-        var fetchUrl = sheetURL + '/tabs/Orders';
-        //if (true) fetchUrl += '/Highlight/*True*'; // {DebugPoint}
-        //if (manUtils.getParam('book')) fetchUrl += '/ProductId/*' + manUtils.getParam('book') + '*'; // {DebugPoint}
-
         // GET Author's Collections
-        fetch(fetchUrl)
+        fetch(sheetURL + '/tabs/Orders')
         .then((response) => {
             return response.json();
         })
@@ -196,12 +173,8 @@
       }
 
       function loadSales(iPanel) {
-        var fetchUrl = sheetURL + '/tabs/Sales/0:20';
-        //if (true) fetchUrl += '/Highlight/*True*'; // {DebugPoint}
-        //if (manUtils.getParam('book')) fetchUrl += '/ProductId/*' + manUtils.getParam('book') + '*'; // {DebugPoint}
-
         // GET Author's Collections
-        fetch(fetchUrl)
+        fetch(sheetURL + '/tabs/Sales/0:20')
         .then((response) => {
             return response.json();
         })
@@ -213,83 +186,6 @@
         .catch((error) => { console.log(error); });
       }
 
-      //custom max min header filter
-      var minMaxFilterEditor = function(cell, onRendered, success, cancel, editorParams){
-
-        var end;
-
-        var container = document.createElement("span");
-
-        //create and style inputs
-        var start = document.createElement("input");
-        start.setAttribute("type", "number");
-        start.setAttribute("placeholder", "Min");
-        start.setAttribute("min", 0);
-        start.setAttribute("max", 100);
-        start.style.padding = "4px";
-        start.style.width = "50%";
-        start.style.boxSizing = "border-box";
-
-        start.value = cell.getValue();
-
-        function buildValues(){
-            success({
-                start:start.value,
-                end:end.value,
-            });
-        }
-
-        function keypress(e){
-            if(e.keyCode == 13){
-                buildValues();
-            }
-
-            if(e.keyCode == 27){
-                cancel();
-            }
-        }
-
-        end = start.cloneNode();
-        end.setAttribute("placeholder", "Max");
-
-        start.addEventListener("change", buildValues);
-        start.addEventListener("blur", buildValues);
-        start.addEventListener("keydown", keypress);
-
-        end.addEventListener("change", buildValues);
-        end.addEventListener("blur", buildValues);
-        end.addEventListener("keydown", keypress);
-
-
-        container.appendChild(start);
-        container.appendChild(end);
-
-        return container;
-     }
-
-      //custom max min filter function
-      function minMaxFilterFunction(headerValue, rowValue, rowData, filterParams){
-          //headerValue - the value of the header filter element
-          //rowValue - the value of the column in this row
-          //rowData - the data for the row being filtered
-          //filterParams - params object passed to the headerFilterFuncParams property
-
-              if(rowValue){
-                  if(headerValue.start != ""){
-                      if(headerValue.end != ""){
-                          return rowValue >= headerValue.start && rowValue <= headerValue.end;
-                      }else{
-                          return rowValue >= headerValue.start;
-                      }
-                  }else{
-                      if(headerValue.end != ""){
-                          return rowValue <= headerValue.end;
-                      }
-                  }
-              }
-
-          return true; //must return a boolean, true if it passes the filter.
-      }
       var bookIcon = function(cell, formatterParams) {
           return "<i class='fa fa-book'></i>";
       };
@@ -332,6 +228,7 @@
                   ? ''
                   : (cell.getRow().getData().PaymentVerified  == 1) ? "<i class='fa fa-check'></i>" : "<i class='fa fa-thumbs-up'></i>";
       };
+
       function swapHighlight(productId, value) {
         fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
           {
@@ -351,6 +248,7 @@
         })
         .catch((error) => { console.log(error); });
       }
+
       function swapBestSeller(productId, value) {
         fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
           {
@@ -370,6 +268,7 @@
         })
         .catch((error) => { console.log(error); });
       }
+
       function swapAvailable(productId, value) {
         fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
           {
@@ -389,6 +288,7 @@
         })
         .catch((error) => { console.log(error); });
       }
+
       function swapPrivateSale(productId, value) {
         fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
           {
@@ -565,6 +465,7 @@
             PlatformShare: platform,
             ProductionCost: production,
           };
+
           fetch(sheetURL + '/tabs/Payments', {
             method: "POST",
             mode: "cors",
@@ -588,6 +489,7 @@
         fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*')
         .then((response) => { return response.json(); })
         .then((myJson) => {
+
           fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*', {
             method: "PATCH",
             mode: "cors",
@@ -920,7 +822,7 @@
         panel.appendChild(hTable);
 
         var pTableGuide = document.createElement('p');
-        pTableGuide.innerHTML = 'บันทึกรายรับ-รายจ่ายของแพลตฟอรม เพื่อกระทบยอดกับยอดบัญชีเงินฝาก';
+        pTableGuide.innerHTML = 'บันทึกรายรับ-รายจ่ายของแพลตฟอร์ม เพื่อกระทบยอดกับยอดบัญชีเงินฝาก';
         panel.appendChild(pTableGuide);
 
         var table = document.createElement('div');
@@ -945,40 +847,45 @@
         // HR
         panel.appendChild(document.createElement('hr'));
 
-        var hCommand = document.createElement('h3');
-        hCommand.innerHTML = 'เพิ่มรายการบัญชี';
-        panel.appendChild(hCommand);
+        if (key == manUtils.getGlobalVars('keySuperAdmin')
+            || key == manUtils.getGlobalVars('keyPublisher')) {
 
-        var cmdDiv = document.createElement('div');
-        cmdDiv.className = "row";
-        var html = "";
+          var hCommand = document.createElement('h3');
+          hCommand.innerHTML = 'เพิ่มรายการบัญชี <span class="badge badge-danger">ฝ่ายการเงิน</span>';
+          panel.appendChild(hCommand);
 
-        html += '<div class="col-md-4">';
-          html += '<div class="input-group">';
-            html += '<input type="input" class="form-control" id="income-interest" placeholder="ระบุจำนวน">';
-            html += '<div class="input-group-append"><button class="btn btn-outline-secondary" onclick="onClickIncomeInterest()">(รับ) ดอกเบี้ย</button></div>';
+          var cmdDiv = document.createElement('div');
+          cmdDiv.className = "row";
+          var html = "";
+
+          html += '<div class="col-md-4">';
+            html += '<div class="input-group">';
+              html += '<input type="input" class="form-control" id="income-interest" placeholder="ระบุจำนวน">';
+              html += '<div class="input-group-append"><button class="btn btn-outline-secondary" onclick="onClickIncomeInterest()">(รับ) ดอกเบี้ย</button></div>';
+            html += '</div>';
           html += '</div>';
-        html += '</div>';
 
-        html += '<div class="col-md-4">';
-          html += '<div class="input-group">';
-            html += '<input type="input" class="form-control" id="outcome-publisher" placeholder="ระบุจำนวน">';
-            html += '<div class="input-group-append"><button class="btn btn-primary" onclick="onClickOutcomePublisher()">(จ่าย) ส่วนแบ่งสำนักพิมพ์</button></div>';
+          html += '<div class="col-md-4">';
+            html += '<div class="input-group">';
+              html += '<input type="input" class="form-control" id="outcome-publisher" placeholder="ระบุจำนวน">';
+              html += '<div class="input-group-append"><button class="btn btn-primary" onclick="onClickOutcomePublisher()">(จ่าย) ส่วนแบ่งสำนักพิมพ์</button></div>';
+            html += '</div>';
           html += '</div>';
-        html += '</div>';
 
-        html += '<div class="col-md-4">';
-          html += '<div class="input-group">';
-            html += '<input type="input" class="form-control" id="outcome-platform" placeholder="ระบุจำนวน">';
-            html += '<div class="input-group-append"><button class="btn btn-dark" onclick="onClickOutcomePlatform()">(จ่าย) ส่วนแบ่งแพลตฟอร์ม</button></div>';
+          html += '<div class="col-md-4">';
+            html += '<div class="input-group">';
+              html += '<input type="input" class="form-control" id="outcome-platform" placeholder="ระบุจำนวน">';
+              html += '<div class="input-group-append"><button class="btn btn-dark" onclick="onClickOutcomePlatform()">(จ่าย) ส่วนแบ่งแพลตฟอร์ม</button></div>';
+              html += '<div style="margin-top:5px;">' + manUtils.getGlobalVars('platformBankAccountId') + ' ' + manUtils.getGlobalVars('platformBankAccountName') + '</div>';
+            html += '</div>';
           html += '</div>';
-        html += '</div>';
 
-        cmdDiv.innerHTML = html;
-        panel.appendChild(cmdDiv);
+          cmdDiv.innerHTML = html;
+          panel.appendChild(cmdDiv);
 
-        // HR
-        panel.appendChild(document.createElement('hr'));
+          // HR
+          panel.appendChild(document.createElement('hr'));
+        }
       }
 
       function showContacts(panel) {
@@ -1036,7 +943,7 @@
               {field:"Enable", hozAlign:"center", formatter:"tickCross"},
               {formatter:profileIcon, hozAlign:"center", cellClick:function(e, cell){
                 //console.log(cell);
-                window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().ContactId);
+                window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().SecretKey);
               }},
               {title:"ชื่อ", field:"FirstName", headerFilter:"input", formatter:function(cell, formatterParams){
                  return manUtils.formatName(cell.getRow().getData().Title, cell.getRow().getData().FirstName, cell.getRow().getData().LastName);
@@ -1059,10 +966,12 @@
               }},
               {title:"รอบหน้า", field:"NextPaid", width:100, headerFilter:"input"},
               {title:"โอน", formatter:thumbsUpIcon, hozAlign:"center", cellClick:function(e, cell){
-                if (cell.getRow().getData().ShareAwait > 0)
-                  onClickOutcomeCopyright(cell.getRow().getData());
-                //console.log(cell);
-                //window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().ContactId);
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
+
+                  if (cell.getRow().getData().ShareAwait > 0)
+                    onClickOutcomeCopyright(cell.getRow().getData());
+                }
               }},
               {title:"ส่ง", width:60, formatter:emailIcon, hozAlign:"center", cellClick:function(e, cell){
                 //console.log(cell);
@@ -1085,10 +994,20 @@
             data:arrProducts, //set initial table data
             columns:[
               {title:"ออกใหม่", field:"Highlight", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
-                swapHighlight(cell.getRow().getData().ProductId, (cell.getRow().getData().Highlight == 'True') ? 'False' : 'True');
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  swapHighlight(cell.getRow().getData().ProductId, (cell.getRow().getData().Highlight == 'True') ? 'False' : 'True');
+                }
               }},
               {title:"ขายดี", field:"BestSeller", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
-                swapBestSeller(cell.getRow().getData().ProductId, (cell.getRow().getData().BestSeller == 'True') ? 'False' : 'True');
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  swapBestSeller(cell.getRow().getData().ProductId, (cell.getRow().getData().BestSeller == 'True') ? 'False' : 'True');
+                }
               }},
               {formatter:bookIcon, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('shopURL') + '?id=' + cell.getRow().getData().ContactId + '&book=' + cell.getRow().getData().ProductId);
@@ -1097,10 +1016,20 @@
               {title:"ผู้เขียน", width:180, field:"Author", headerFilter:"input"},
               {title:"ขาย (เล่ม)", field:"Amount", hozAlign:"center"},
               {title:"ซื้อได้", field:"Available", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
-                swapAvailable(cell.getRow().getData().ProductId, (cell.getRow().getData().Available == 'True') ? 'False' : 'True');
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  swapAvailable(cell.getRow().getData().ProductId, (cell.getRow().getData().Available == 'True') ? 'False' : 'True');
+                }
               }},
               {title:"เฉพาะบุคคล", field:"PrivateSale", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
-                swapPrivateSale(cell.getRow().getData().ProductId, (cell.getRow().getData().PrivateSale == 'True') ? 'False' : 'True');
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  swapPrivateSale(cell.getRow().getData().ProductId, (cell.getRow().getData().PrivateSale == 'True') ? 'False' : 'True');
+                }
               }},
             ],
         });
@@ -1183,17 +1112,27 @@
               {title:"เลขที่คำสั่ง", width:100, field:"OrderId"},
               {title:"สถานะคำสั่ง", width:180, field:"OrderStatus", editor:"select", editorParams:{"ป้อนข้อมูลจัดส่ง":"ป้อนข้อมูลจัดส่ง", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}, headerFilter:true, headerFilterParams:{"ป้อนข้อมูลจัดส่ง":"ป้อนข้อมูลจัดส่ง", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}},
               {formatter:verifyIcon, hozAlign:"center", cellClick:function(e, cell){
-                if ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
-                    || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')) {
-                } else {
-                  onVerifyPayment(cell.getRow().getData().OrderId, cell.getRow().getData().GrandTotal, cell.getRow().getData().PaymentDate, cell.getRow().getData().PaymentTime);
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  if ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
+                      || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')) {
+                  } else {
+                    onVerifyPayment(cell.getRow().getData().OrderId, cell.getRow().getData().GrandTotal, cell.getRow().getData().PaymentDate, cell.getRow().getData().PaymentTime);
+                  }
                 }
               }},
               {formatter:rejectIcon, hozAlign:"center", cellClick:function(e, cell){
-                if ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
-                    || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')) {
-                } else {
-                  onRejectPayment(cell.getRow().getData().OrderId);
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  if ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
+                      || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')) {
+                  } else {
+                    onRejectPayment(cell.getRow().getData().OrderId);
+                  }
                 }
               }},
               {title:"บ.", width:50, hozAlign:"right", field:"GrandTotal"},
@@ -1204,14 +1143,24 @@
                 window.open(manUtils.getGlobalVars('invoiceURL') + '?id=' + cell.getRow().getData().OrderId);
               }},
               {title:"เลขที่พัสดุ", width:100, field:"TrackingCode", editor:"input", cellEdited:function(cell){
-                if (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
-                  onInputTrackingId(cell.getRow().getData().OrderId, cell.getValue());
-                else window.location.href = "admin.html?id=main-order&key=" + key;
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  if (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
+                    onInputTrackingId(cell.getRow().getData().OrderId, cell.getValue());
+                  else window.location.href = "admin.html?id=main-order&key=" + key;
+                }
               }},
               {title:"ขนส่ง", width:80, field:"Transporter", editor:"select", editorParams:{"Flash":"Flash", "J&T":"J&T", "Kerry":"Kerry", "ThaiPost":"ThaiPost"}, cellEdited:function(cell){
-                if (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
-                  onSelectTransporter(cell.getRow().getData().OrderId, cell.getValue());
-                else window.location.href = "admin.html?id=main-order&key=" + key;
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  if (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
+                    onSelectTransporter(cell.getRow().getData().OrderId, cell.getValue());
+                  else window.location.href = "admin.html?id=main-order&key=" + key;
+                }
               }},
               {formatter:trackingIcon, hozAlign:"center", cellClick:function(e, cell){
                 var url = "";
@@ -1258,28 +1207,35 @@
       function showSidebarMenu(menuId) {
         document.getElementById('menu-website').href = manUtils.getGlobalVars('websiteURL');
 
-        var menuItems = [
-          {icon: 'fa-home', caption: 'รายงานสรุป', name: 'main-dashboard', href: 'admin.html?id=main-dashboard&key=' + key},
-          {icon: 'fa-user', caption: 'นักเขียน', name: 'main-contact', href: 'admin.html?id=main-contact&key=' + key},
-          {icon: 'fa-book', caption: 'หนังสือ', name: 'main-book', href: 'admin.html?id=main-book&key=' + key},
-          {icon: 'fa-shopping-cart', caption: 'คำสั่งซื้อ', name: 'main-order', href: 'admin.html?id=main-order&key=' + key},
-          {icon: 'fa-clipboard', caption: 'รายการขาย', name: 'main-sale', href: 'admin.html?id=main-sale&key=' + key},
-        ];
-        var html = "";
+        var menuItems = [];
 
-        for (var i in menuItems) {
-          var item = menuItems[i];
-          html += '<li class="nav-item">';
-            if (item.name == menuId)
-              html += '<a class="nav-link active" href="' + item.href + '">';
-            else html += '<a class="nav-link" href="' + item.href + '">';
-              html += '<i class="fa ' + item.icon + ' fa-lg"></i>&nbsp;&nbsp;';
-              html += item.caption;
-              html += (item.name == menuId) ? '<span class="sr-only">(current)</span>' : '';
-            html += '</a>';
-          html += '</li>';
+        if (key == manUtils.getGlobalVars('keySuperAdmin')
+            || key == manUtils.getGlobalVars('keyPublisher')
+            || key == manUtils.getGlobalVars('keyViewer')) {
+          menuItems.push({icon: 'fa-money', caption: 'การเงิน <span class="badge badge-danger">ฝ่ายการเงิน</span>', name: 'main-dashboard', href: 'admin.html?id=main-dashboard&key=' + key});
         }
-        document.getElementById('menu-sidebar').innerHTML = html;
+        menuItems.push({icon: 'fa-user', caption: 'นักเขียน', name: 'main-contact', href: 'admin.html?id=main-contact&key=' + key});
+        menuItems.push({icon: 'fa-book', caption: 'หนังสือ', name: 'main-book', href: 'admin.html?id=main-book&key=' + key});
+        menuItems.push({icon: 'fa-shopping-cart', caption: 'คำสั่งซื้อ', name: 'main-order', href: 'admin.html?id=main-order&key=' + key});
+        menuItems.push({icon: 'fa-clipboard', caption: 'รายการขาย', name: 'main-sale', href: 'admin.html?id=main-sale&key=' + key});
+
+        //console.log(key);
+        var html = "";
+        if (menuItems.length > 0) {
+          for (var i in menuItems) {
+            var item = menuItems[i];
+            html += '<li class="nav-item">';
+              if (item.name == menuId)
+                html += '<a class="nav-link active" href="' + item.href + '">';
+              else html += '<a class="nav-link" href="' + item.href + '">';
+                html += '<i class="fa ' + item.icon + ' fa-lg"></i>&nbsp;&nbsp;';
+                html += item.caption;
+                html += (item.name == menuId) ? '<span class="sr-only">(current)</span>' : '';
+              html += '</a>';
+            html += '</li>';
+          }
+          document.getElementById('menu-sidebar').innerHTML = html;
+        }
       }
 
       function spawnCard(deck, data) {

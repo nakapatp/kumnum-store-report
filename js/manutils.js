@@ -15,6 +15,11 @@ var manUtils = (function() {
     }
     return false;
   };
+  obj.encryptKey = function(raw) {
+    var key = '';
+
+    return key;
+  };
   obj.decryptKey = function(key) {
     var raw = key;
 
@@ -61,6 +66,25 @@ var manUtils = (function() {
         return globalVars[i].Value;
     }
     return null;
+  };
+
+  obj.getHTML404 = function(title, subtitle, desc) {
+    var html = "";
+    html += '<div class="row">';
+      html += '<div class="col-md-12">';
+        html += '<div class="error-template" style="margin-top:20px;">';
+          if (title) html += '<h1>' + title + '</h1>';
+          if (subtitle) html += '<h2>' + subtitle + '</h2>';
+          if (desc) html += '<div class="error-details">' + desc + '</div>';
+          html += '<div class="error-actions" style="margin-top:20px;">';
+              html += '<a href="https://store.kumnum.com" class="btn btn-primary btn-lg">';
+              html += '<i class="fa fa-home"></i> เว็บไซต์</a><a href="https://store.kumnum.com/shop.html" class="btn btn-default btn-lg"><i class="fa fa-book"></i> หน้าร้าน</a>';
+          html += '</div>';
+        html += '</div>';
+      html += '</div>';
+    html += '</div>';
+
+    return html;
   };
   obj.hasClass = function (elem, className) {
     return elem.className.split(' ').indexOf(className) > -1;

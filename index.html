@@ -30,10 +30,10 @@
     <div class="overlay" id="overlay"></div>
 
     <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
-      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">ร้านหนังสือ "คำนำ"</a>
+      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="https://store.kumnum.com">ร้านหนังสือ "คำนำ"</a>
     </nav>
 
-    <div class="container-fluid">
+    <div class="container-fluid" id="container-main">
       <div class="row">
         <!-- Sidebar -->
         <nav class="col-md-2 d-none d-md-block bg-light sidebar">
@@ -60,6 +60,9 @@
         </main>
       </div>
     </div>
+    <!-- 404 Page -->
+    <div class="container" id="container-404">
+    </div>
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
@@ -79,9 +82,11 @@
     <!-- Font Awesome Kit Code -->
     <script src="https://kit.fontawesome.com/354ed2e7c0.js" crossorigin="anonymous"></script>
 
+
     <!-- Dashboard JavaScript -->
     <script type="text/javascript">
-      var sheetURL = 'https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc';
+      const sheetURL = 'https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc'; // Production
+      //const sheetURL = 'https://sheet.best/api/sheets/86299b5c-1850-4f51-b969-a44721bfe390'; // Dev
       var menuId = (manUtils.getParam('id') == null || manUtils.getParam('id') == "") ? 'main-dashboard' : manUtils.getParam('id');
       var key = manUtils.getParam('key');
       var globalVars = null;
@@ -89,6 +94,14 @@
       var arrProducts = null;
       var arrSales = null;
       var arrPayments = null;
+
+      function showPage404() {
+        document.getElementById('container-main').style.display = 'none';
+        var desc = 'การเรียกดูรายงานการขายต้องใช้ <span class="text-primary"><i class="fa fa-key"></i> รหัสส่วนตัว</span> ที่คุณได้รับยืนยันการลงทะเบียนสำเร็จ<br/>';
+        desc += 'โปรดตรวจสอบอีเมลดังกล่าว หรือหากยังไม่ได้รับอีเมลยืนยัน กรุณาติดต่อเจ้าหน้าที่ของ "คำนำ" ที่ดูแลคุณอยู่';
+        document.getElementById('container-404').innerHTML = manUtils.getHTML404('ขออภัย!', 'เราไม่พบข้อมูลที่คุณกำลังมองหา', desc);
+        document.getElementById('overlay').remove();
+      }
 
       function init() {
 
@@ -106,13 +119,18 @@
         document.getElementById('overlay').remove();
       }
 
-      function loadContacts(contactId) {
+      function loadContactsByKey(keyId) {
         // GET Author Info
-        fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*')
+        fetch(sheetURL + '/tabs/Contacts/SecretKey/*' + keyId + '*')
         .then((response) => { return response.json(); })
         .then((myJson) => {
           keyOwner = myJson[0];
-          loadPayments(contactId);
+
+          if (keyOwner == null) {
+            showPage404();
+          } else {
+            loadPayments(keyOwner.ContactId);
+          }
         })
         .catch((error) => { console.log(error); });
       }
@@ -150,7 +168,7 @@
 
       function loadSales(contactId) {
         // GET Author's Collections
-        fetch(sheetURL + '/tabs/Sales/ContactId/*' + keyOwner.ContactId + '*')
+        fetch(sheetURL + '/tabs/Sales/ContactId/*' + contactId + '*')
         .then((response) => {
             return response.json();
         })
@@ -644,13 +662,13 @@
 
           var html = '';
           for (var i in arrProducts) {
-            var desc = arrProducts[i].Brief;
-            desc += '<p style="color:#ccc; font-weight:300">' + arrProducts[i].Spec + '</p>';
+            //var desc = arrProducts[i].Brief;
+            //desc += '<p style="color:#ccc; font-weight:300">' + arrProducts[i].Spec + '</p>';
             var data = {
               Title: arrProducts[i].Title,
-              Description: desc,
+              Description: arrProducts[i].Brief,
               imageURL: arrProducts[i].ImageFull,
-              maxWidth: 300,
+              maxWidth: 170,
             };
             if (arrProducts[i].Available == 'False')
               data.Title += ' <div class="badge badge-danger">งดจำหน่าย</div>';
@@ -659,8 +677,20 @@
                    ? ' <div class="badge badge-warning">ขายเฉพาะบุคคล</div>'
                    : ' <div class="badge badge-success">ขายแบบสาธารณะ</div>';
             }
-            html = '<h4>' + arrProducts[i].Price + ' บ.</h4>';
-            html += '<p><span>ส่วนแบ่งค่าลิขสิทธิ์ ' + arrProducts[i].CopyrightRatio + '% (= ' + arrProducts[i].SharePerUnit + ' บ.)</p>';
+            var tooltiptext = '';
+            html = '<h4>' + arrProducts[i].Price + ' บ.';
+              tooltiptext = arrProducts[i].Spec.replaceAll('<br>', '');
+              html += '<span class="text-secondary"> <small><i class="fa fa-info-circle fa-xs" data-toggle="tooltip" data-placement="top" title="' + tooltiptext + '"></i></small></span>';
+            html += '</h4>';
+            html += '<p>';
+              html += '<span>ค่าลิขสิทธิ์ ' + arrProducts[i].SharePerUnit + ' บ.';
+              tooltiptext = '';
+              tooltiptext += 'ค่าผลิต ' + arrProducts[i].Cost + ' บ.';
+              tooltiptext += '&#10ค่าจัดจำหน่าย ' + (Number(arrProducts[i].PublisherShare) + Number(arrProducts[i].PlatformShare)) + ' บ.';
+              tooltiptext += '&#10ค่าลิขสิทธิ์ ' + arrProducts[i].SharePerUnit + ' บ. (' + arrProducts[i].CopyrightRatio + '%)';
+              html += '<span class="text-secondary"> <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="' + tooltiptext + '"></i>'
+              //html += ' ค่าผลิต (' + arrProducts[i].Cost + ' บ.) ค่าจัดจำหน่าย (' + (Number(arrProducts[i].PublisherShare) + Number(arrProducts[i].PlatformShare)) + ' บ.)';
+            html += '</p>';
             html += '<p><ul class="list-group">';
               html += '<li class="list-group-item">ลิงก์สั่งซื้อ&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + arrProducts[i].PrivateBookURL + '" target="_blank">' + arrProducts[i].PrivateBookURL + '</a></li>';
               html += '<li class="list-group-item">ภาพคิวอาร์โค้ด&nbsp;&nbsp;<i class="fa fa-qrcode fa-lg"></i>&nbsp;&nbsp;<a href="' + arrProducts[i].ImagePrivateBookQR + '" target="_blank">' + arrProducts[i].ImagePrivateBookQR + '</a></li>';
@@ -678,7 +708,7 @@
         document.getElementById('menu-website').href = manUtils.getGlobalVars('websiteURL');
 
         var menuItems = [
-          {icon: 'fa-home', caption: 'รายงานสรุป', name: 'main-dashboard', href: 'index.html?id=main-dashboard&key=' + manUtils.getParam('key')},
+          {icon: 'fa-money', caption: 'รายงานสรุป', name: 'main-dashboard', href: 'index.html?id=main-dashboard&key=' + manUtils.getParam('key')},
           {icon: 'fa-user', caption: 'ข้อมูลส่วนตัว', name: 'main-profile', href: 'index.html?id=main-profile&key=' + manUtils.getParam('key')},
           {icon: 'fa-shopping-cart', caption: 'หน้าร้าน', name: 'main-shop', href: 'index.html?id=main-shop&key=' + manUtils.getParam('key')},
           {icon: 'fa-book', caption: 'หนังสือ', name: 'main-book', href: 'index.html?id=main-book&key=' + manUtils.getParam('key')},
@@ -737,6 +767,7 @@
 
         panel.appendChild(media);
       }
+
       window.addEventListener('load', (event) => {
         // GET GlobalVars
         // -- GET Author Info
@@ -745,7 +776,7 @@
         .then((myJson) => {
           globalVars = myJson;
 
-          loadContacts(manUtils.decryptKey(manUtils.getParam('key')));
+          loadContactsByKey(manUtils.decryptKey(key));
         })
         .catch((error) => { console.log(error); });
       });
