@@ -441,10 +441,10 @@
 
             var sale = myJson[i];
             addSaleToProduct(sale.ProductId, sale.Amount);
-            Number(publisher) += Number(sale.PublisherShare);
-            Number(copyright) += Number(sale.CopyrightShare);
-            Number(platform) += Number(sale.PlatformShare);
-            Number(production) += Number(sale.ProductionCost);
+            publisher += Number(sale.PublisherShare);
+            copyright += Number(sale.CopyrightShare);
+            platform += Number(sale.PlatformShare);
+            production += Number(sale.ProductionCost);
 
             if (!manUtils.arrayHasKeyValue(owner, 'ContactId', sale.ContactId)) {
               var data = {
@@ -457,8 +457,8 @@
             } else {
               for (var j in owner) {
                 if (owner[j].ContactId == sale.ContactId) {
-                  Number(owner[j].SaleCount) += Number(sale.Amount);
-                  Number(owner[j].ShareAwait) += Number(sale.CopyrightShare);
+                  owner[j].SaleCount += Number(sale.Amount);
+                  owner[j].ShareAwait += Number(sale.CopyrightShare);
                   break;
                 }
               }
@@ -513,8 +513,8 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              Amount: Number(Number(myJson[0].Amount) + Number(num)),
-              CopyrightShare: Number(Number(myJson[0].CopyrightShare) + (num * myJson[0].SharePerUnit)),
+              Amount: (Number(myJson[0].Amount) + Number(num)),
+              CopyrightShare: (Number(myJson[0].CopyrightShare) + (num * myJson[0].SharePerUnit)),
             }),
           })
           .then((response) => { return response.json(); })
@@ -532,6 +532,8 @@
         fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*')
         .then((response) => { return response.json(); })
         .then((myJson) => {
+          var count = Number(myJson[0].SaleCount) + Number(num);
+          var val = Number(myJson[0].ShareAwait) + Number(share);
           fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*', {
             method: "PATCH",
             mode: "cors",
@@ -539,8 +541,8 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              SaleCount: Number(myJson[0].SaleCount) + Number(num),
-              ShareAwait: Number(myJson[0].ShareAwait) + Number(share),
+              SaleCount: count,
+              ShareAwait: val,
             }),
           })
           .then((response) => { return response.json(); })
@@ -669,7 +671,7 @@
           })
           .then((response) => { return response.json(); })
           .then((myJson) => {
-
+            var received = Number(contact.ShareReceived) + Number(contact.ShareAwait);
             fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contact.ContactId + '*', {
               method: "PATCH",
               mode: "cors",
@@ -677,7 +679,7 @@
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                 ShareReceived: Number(contact.ShareReceived) + Number(contact.ShareAwait),
+                 ShareReceived: received,
                  ShareAwait: "0",
                  NextPaid: nextDate.toISOString().slice(0, 10),
               }),
