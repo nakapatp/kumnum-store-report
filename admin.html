@@ -190,7 +190,7 @@
 
       function loadSales(iPanel) {
         // GET Author's Collections
-        fetch(sheetURL + '/tabs/Sales/0:20')
+        fetch(sheetURL + '/tabs/Sales/0:300')
         .then((response) => {
             return response.json();
         })
@@ -326,6 +326,46 @@
         .catch((error) => { console.log(error); });
       }
 
+      function onInputPaymentBankAccountId(ID, value) {
+        fetch(sheetURL + '/tabs/Payments/ID/*' + ID + '*',
+          {
+            method: "PATCH",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              BankAccountId: value,
+            }),
+          }
+        )
+        .then((response) => { return response.json(); })
+        .then((data) => {
+          //window.location.href = "admin.html?id=main-order&key=" + key;
+        })
+        .catch((error) => { console.log(error); });
+      }
+
+      function onSelectPaymentBankName(ID, value) {
+        fetch(sheetURL + '/tabs/Payments/ID/*' + ID + '*',
+          {
+            method: "PATCH",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              BankName: value,
+            }),
+          }
+        )
+        .then((response) => { return response.json(); })
+        .then((data) => {
+          //window.location.href = "admin.html?id=main-order&key=" + key;
+        })
+        .catch((error) => { console.log(error); });
+      }
+
       function onInputTrackingId(orderId, value) {
         fetch(sheetURL + '/tabs/Orders/OrderId/*' + orderId + '*',
           {
@@ -366,7 +406,7 @@
         .catch((error) => { console.log(error); });
       }
 
-      function onVerifyPayment(orderId, grandTotal, datePayment, timePayment) {
+      function onVerifyPayment(orderId, grandTotal, datePayment, timePayment, shippingCost) {
         // Update 'Orders'
         // -- Update 'Sales'
         // ---- completePurchase()
@@ -394,7 +434,7 @@
           )
           .then((response) => { return response.json(); })
           .then((data) => {
-            completePurchase(orderId, grandTotal, datePayment, timePayment);
+            completePurchase(orderId, grandTotal, datePayment, timePayment, shippingCost);
           })
           .catch((error) => { console.log(error); });
         })
@@ -423,7 +463,7 @@
         .catch((error) => { console.log(error); });
       }
 
-      function completePurchase(orderId, grandTotal, datePayment, timePayment) {
+      function completePurchase(orderId, grandTotal, datePayment, timePayment, shippingCost) {
         // ---- Update 'Products'  (Amount, CopyrightShare)
         // ---- Update 'Contacts' (SaleCount, ShareAwait)
         // -------- Insert 'Payments' (PaymentDate, PaymentTime, OrderId, Income, Content)
@@ -476,6 +516,7 @@
 
           // Insert 'Payments'
           const trans = {
+            ID: String(manUtils.generateID()),
             PaymentDate: datePayment,
             PaymentTime: timePayment,
             OrderId: orderId,
@@ -485,6 +526,7 @@
             CopyrightShare: copyright,
             PlatformShare: platform,
             ProductionCost: production,
+            ShippingCost: (shippingCost == 0) ? "0" : shippingCost,
           };
 
           fetch(sheetURL + '/tabs/Payments', {
@@ -560,8 +602,10 @@
         .catch((error) => { console.log(error); });
       }
 
-      function onClickIncomeInterest() {
-        var amount = document.getElementById('income-interest').value;
+      function onClickIncome(obj) {
+        var elementId = obj.getAttribute('data-name');
+        var content = obj.getAttribute('data-content');
+        var amount = document.getElementById(elementId).value;
 
         if (amount > 0) {
           var d = new Date();
@@ -575,10 +619,11 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-               PaymentDate: currentDate,
-               PaymentTime: currentTime,
-               Income: amount,
-               Content: 'ดอกเบี้ย',
+              ID: String(manUtils.generateID()),
+              PaymentDate: currentDate,
+              PaymentTime: currentTime,
+              Income: amount,
+              Content: content,
             }),
           })
           .then((response) => { return response.json(); })
@@ -590,8 +635,10 @@
         }
       }
 
-      function onClickOutcomePublisher() {
-        var amount = document.getElementById('outcome-publisher').value;
+      function onClickOutcome(obj) {
+        var elementId = obj.getAttribute('data-name');
+        var content = obj.getAttribute('data-content');
+        var amount = document.getElementById(elementId).value;
 
         if (amount > 0) {
           var d = new Date();
@@ -605,40 +652,11 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-               PaymentDate: currentDate,
-               PaymentTime: currentTime,
-               Outcome: amount,
-               Content: 'ส่วนแบ่งสำนักพิมพ์',
-            }),
-          })
-          .then((response) => { return response.json(); })
-          .then((myJson) => {
-
-            window.location.href = "admin.html?id=main-dashboard&key=" + key;
-          })
-          .catch((error) => { console.log(error); });
-        }
-      }
-
-      function onClickOutcomePlatform() {
-        var amount = document.getElementById('outcome-platform').value;
-
-        if (amount > 0) {
-          var d = new Date();
-          var currentDate = d.toISOString().slice(0, 10);
-          var currentTime = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(11,16);
-
-          fetch(sheetURL + '/tabs/Payments', {
-            method: "POST",
-            mode: "cors",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-               PaymentDate: currentDate,
-               PaymentTime: currentTime,
-               Outcome: amount,
-               Content: 'ส่วนแบ่งแพลตฟอร์ม',
+              ID: String(manUtils.generateID()),
+              PaymentDate: currentDate,
+              PaymentTime: currentTime,
+              Outcome: amount,
+              Content: content,
             }),
           })
           .then((response) => { return response.json(); })
@@ -665,14 +683,15 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-               PaymentDate: currentDate,
-               PaymentTime: currentTime,
-               Outcome: contact.ShareAwait,
-               Content: 'ค่าลิขสิทธิ์ ID.' + contact.ContactId,
-               ContactId: contact.ContactId,
-               ContactName: manUtils.formatName(contact.Title, contact.FirstName, contact.LastName),
-               BankAccountId: contact.BankAccountId,
-               BankName: contact.BankName,
+              ID: String(manUtils.generateID()),
+              PaymentDate: currentDate,
+              PaymentTime: currentTime,
+              Outcome: contact.ShareAwait,
+              Content: 'ค่าลิขสิทธิ์ ID.' + contact.ContactId,
+              ContactId: contact.ContactId,
+              ContactName: manUtils.formatName(contact.Title, contact.FirstName, contact.LastName),
+              BankAccountId: contact.BankAccountId,
+              BankName: contact.BankName,
             }),
           })
           .then((response) => { return response.json(); })
@@ -716,16 +735,26 @@
         var outcomePublisher = 0;
         var outcomeCopyright = 0;
         var outcomePlatform = 0;
+        var outcomeProduction = 0;
+        var outcomeShipping = 0;
+        var outcomeMisc = 0;
 
         var sharePublisher = 0;
         var shareCopyright = 0;
         var sharePlatform = 0;
+        var costProduction = 0;
+        var costShipping = 0;
+        //var costMisc = 0;
 
         var collectiveIncomeMain = 0;
         var collectiveIncomeMisc = 0;
+
         var collectiveSharePublisher = 0;
         var collectiveShareCopyright = 0;
         var collectiveSharePlatform = 0;
+        var collectiveProductionCost = 0;
+        var collectiveShippingCost = 0;
+        var collectiveMiscCost = 0;
 
         var sumIncome = 0;
         var sumOutcome = 0;
@@ -736,9 +765,12 @@
               collectiveIncomeMain += Number(arrPayments[i].Income);
             else collectiveIncomeMisc += Number(arrPayments[i].Income);
 
-            collectiveSharePublisher += (Number(arrPayments[i].PublisherShare) + Number(arrPayments[i].ProductionCost));
+            collectiveSharePublisher += Number(arrPayments[i].PublisherShare);
             collectiveShareCopyright += Number(arrPayments[i].CopyrightShare);
             collectiveSharePlatform += Number(arrPayments[i].PlatformShare);
+            collectiveProductionCost += Number(arrPayments[i].ProductionCost);
+            collectiveShippingCost += Number(arrPayments[i].ShippingCost);
+            //collectiveMiscCost += Number(arrPayments[i].MiscCost);
 
             sumIncome += Number(arrPayments[i].Income);
           }
@@ -749,6 +781,12 @@
               outcomeCopyright += Number(arrPayments[i].Outcome);
             else if (arrPayments[i].Content.includes('แพลตฟอร์ม'))
               outcomePlatform += Number(arrPayments[i].Outcome);
+            else if (arrPayments[i].Content.includes('ค่าผลิต'))
+              outcomeProduction += Number(arrPayments[i].Outcome);
+            else if (arrPayments[i].Content.includes('ค่าจัดส่ง'))
+              outcomeShipping += Number(arrPayments[i].Outcome);
+            else if (arrPayments[i].Content.includes('ค่าใช้จ่าย'))
+              outcomeMisc += Number(arrPayments[i].Outcome);
 
             sumOutcome += Number(arrPayments[i].Outcome);
           }
@@ -757,6 +795,10 @@
         sharePublisher = collectiveSharePublisher - outcomePublisher;
         shareCopyright = collectiveShareCopyright - outcomeCopyright;
         sharePlatform = collectiveSharePlatform - outcomePlatform;
+        costProduction = collectiveProductionCost - outcomeProduction;
+        costShipping = collectiveShippingCost - outcomeShipping;
+        //costMisc = collectiveMiscCost - outcomeMisc;
+        collectiveMiscCost = outcomeMisc;
 
         // Balance
         var data = {
@@ -766,7 +808,7 @@
           Unit: 'บาท',
           TextColor: 'white',
           Color: 'success',
-          Remark: '= ส่วนแบ่งรอโอน + ค่าจัดส่ง + ดอกเบี้ย',
+          Remark: '= ส่วนแบ่งรอโอน + ส่วนต่างคงเหลือ',
         };
         spawnCard(deck, data);
 
@@ -790,12 +832,12 @@
           Unit: 'บาท',
           TextColor: 'black',
           Color: 'light',
-          Remark: 'หมายถึง "ดอกเบี้ย" เท่านั้น',
+          Remark: '= ดอกเบี้ย + เงินฝาก',
         };
         spawnCard(deck, data);
 
         var pShare = document.createElement('p');
-        pShare.innerHTML = '<h3>รายจ่าย</h3><p>รายจ่ายของแพลตฟอร์มมี 3 ทาง ได้แก่ ส่วนแบ่งสำนักพิมพ์, ส่วนแบ่งค่าลิขสิทธิ์ และส่วนแบ่งแฟลตฟอร์ม</p>';
+        pShare.innerHTML = '<h3>รายจ่าย</h3><p>รายจ่ายของแพลตฟอร์มมี 6 ทาง ได้แก่ ส่วนแบ่งสำนักพิมพ์, ค่าลิขสิทธิ์, ส่วนแบ่งแฟลตฟอร์ม, ค่าผลิต, ค่าจัดส่ง และค่าใช้จ่ายอื่น ๆ</p>';
         panel.appendChild(pShare);
 
         var deckShare = document.createElement('div');
@@ -817,12 +859,12 @@
         // Copyright Share
         var data = {
           ElementID: 'share-copyright',
-          Title: 'ส่วนแบ่งค่าลิขสิทธิ์รอโอน <sup>4</sup>',
+          Title: 'ค่าลิขสิทธิ์รอโอน <sup>4</sup>',
           Value: manUtils.formatNumber(shareCopyright, 0),
           Unit: 'บาท',
           TextColor: 'white',
           Color: 'secondary',
-          Remark: 'ส่วนแบ่งค่าลิขสิทธิ์สะสม ' + manUtils.formatNumber(collectiveShareCopyright, 0) + ' บ.',
+          Remark: 'ค่าลิขสิทธิ์สะสม ' + manUtils.formatNumber(collectiveShareCopyright, 0) + ' บ.',
         };
         spawnCard(deckShare, data);
 
@@ -841,6 +883,49 @@
         // HR
         panel.appendChild(document.createElement('hr'));
 
+        var deckExpense = document.createElement('div');
+        deckExpense.className = 'card-deck mb-3 text-center';
+        panel.appendChild(deckExpense);
+
+        // Expense Production
+        var data = {
+          ElementID: 'expense-production',
+          Title: 'ค่าผลิตรอโอน <sup>6</sup>',
+          Value: manUtils.formatNumber(costProduction, 0),
+          Unit: 'บาท',
+          TextColor: 'white',
+          Color: 'primary',
+          Remark: 'ค่าผลิตสะสม ' + manUtils.formatNumber(collectiveProductionCost, 0) + ' บ.',
+        };
+        spawnCard(deckExpense, data);
+
+        // Expense Shipping
+        var data = {
+          ElementID: 'expense-shipping',
+          Title: 'ค่าจัดส่งรอโอน <sup>7</sup>',
+          Value: manUtils.formatNumber(costShipping, 0),
+          Unit: 'บาท',
+          TextColor: 'white',
+          Color: 'info',
+          Remark: 'ค่าจัดส่งสะสม ' + manUtils.formatNumber(collectiveShippingCost, 0) + ' บ.',
+        };
+        spawnCard(deckExpense, data);
+
+        // Expense Other
+        var data = {
+          ElementID: 'expense-others',
+          Title: 'ค่าใช้จ่ายสะสม  <sup>8</sup>',
+          Value: manUtils.formatNumber(collectiveMiscCost, 0),
+          Unit: 'บาท',
+          TextColor: 'black',
+          Color: 'light',
+          Remark: 'ค่าใช้จ่ายที่ต้องอาศัย ดอกเบี้ยและเงินฝาก<sup>2</sup> รองรับ',
+        };
+        spawnCard(deckExpense, data);
+
+        // HR
+        panel.appendChild(document.createElement('hr'));
+
         var hTable = document.createElement('h3');
         hTable.innerHTML = 'รายการบัญชี';
         panel.appendChild(hTable);
@@ -854,6 +939,7 @@
         panel.appendChild(table);
 
         var table = new Tabulator("#tabulator-payments", {
+            maxHeight:450,
             data:arrPayments, //set initial table data
             columns:[
               {title:"วันที่", width:100, field:"PaymentDate", headerFilter:"input"},
@@ -863,8 +949,12 @@
               {title:"จ่าย", hozAlign:"right", field:"Outcome", bottomCalc:"sum"},
               {title:"รายการ", width:200, field:"Content", headerFilter:"input"},
               {title:"ผู้โอน/รับโอน", width:150, field:"ContactName", headerFilter:"input"},
-              {title:"เลขที่บัญชี", width:130, field:"BankAccountId"},
-              {title:"ช่องทาง", width:100, field:"BankName"},
+              {title:"เลขที่บัญชี", width:130, field:"BankAccountId", editor:"input", cellEdited:function(cell){
+                onInputPaymentBankAccountId(cell.getRow().getData().ID, cell.getValue());
+              }},
+              {title:"ช่องทาง", width:100, field:"BankName", editor:"select", editorParams:{"ธ.กรุงเทพ":"ธ.กรุงเทพ", "ธ.กสิกรไทย":"ธ.กสิกรไทย", "ธ.ไทยพาณิชย์":"ธ.ไทยพาณิชย์", "ธ.กรุงไทย":"ธ.กรุงไทย", "ธ.ทหารไทย":"ธ.ทหารไทย", "ธ.ออมสิน":"ธ.ออมสิน", "ธ.กรุงศรีอยุธยา":"ธ.กรุงศรีอยุธยา", "พร้อมเพย์":"พร้อมเพย์"}, cellEdited:function(cell){
+                onSelectPaymentBankName(cell.getRow().getData().ID, cell.getValue());
+              }},
             ],
         });
 
@@ -880,32 +970,62 @@
 
           var cmdDiv = document.createElement('div');
           cmdDiv.className = "row";
+          cmdDiv.style = "margin-top:20px";
           var html = "";
 
           html += '<div class="col-md-4">';
             html += '<div class="input-group">';
               html += '<input type="input" class="form-control" id="income-interest" placeholder="ระบุจำนวน">';
-              html += '<div class="input-group-append"><button class="btn btn-outline-secondary" onclick="onClickIncomeInterest()">(รับ) ดอกเบี้ย</button></div>';
+              html += '<div class="input-group-append"><button class="btn btn-outline-secondary" onclick="onClickIncome(this)" data-name="income-interest" data-content="ดอกเบี้ย">(รับ) ดอกเบี้ย</button></div>';
             html += '</div>';
           html += '</div>';
 
           html += '<div class="col-md-4">';
             html += '<div class="input-group">';
               html += '<input type="input" class="form-control" id="outcome-publisher" placeholder="ระบุจำนวน">';
-              html += '<div class="input-group-append"><button class="btn btn-primary" onclick="onClickOutcomePublisher()">(จ่าย) ส่วนแบ่งสำนักพิมพ์</button></div>';
+              html += '<div class="input-group-append"><button class="btn btn-primary" onclick="onClickOutcome(this)" data-name="outcome-publisher" data-content="ส่วนแบ่งสำนักพิมพ์">(จ่าย) ส่วนแบ่งสำนักพิมพ์</button></div>';
             html += '</div>';
           html += '</div>';
 
           html += '<div class="col-md-4">';
             html += '<div class="input-group">';
               html += '<input type="input" class="form-control" id="outcome-platform" placeholder="ระบุจำนวน">';
-              html += '<div class="input-group-append"><button class="btn btn-dark" onclick="onClickOutcomePlatform()">(จ่าย) ส่วนแบ่งแพลตฟอร์ม</button></div>';
-              html += '<div style="margin-top:5px;">' + manUtils.getGlobalVars('platformBankAccountId') + ' ' + manUtils.getGlobalVars('platformBankAccountName') + '</div>';
+              html += '<div class="input-group-append"><button class="btn btn-dark" onclick="onClickOutcome(this)" data-name="outcome-platform" data-content="ส่วนแบ่งแพลตฟอร์ม">(จ่าย) ส่วนแบ่งแพลตฟอร์ม</button></div>';
+              html += '<div style="margin-left:5px; margin-top:5px;">' + manUtils.getGlobalVars('platformBankAccountId') + ' ' + manUtils.getGlobalVars('platformBankAccountName') + '</div>';
             html += '</div>';
           html += '</div>';
 
           cmdDiv.innerHTML = html;
           panel.appendChild(cmdDiv);
+
+          var cmdDiv2 = document.createElement('div');
+          cmdDiv2.className = "row";
+          cmdDiv2.style = "margin-top:10px";
+          var html = "";
+
+          html += '<div class="col-md-4">';
+            html += '<div class="input-group">';
+              html += '<input type="input" class="form-control" id="outcome-production" placeholder="ระบุจำนวน">';
+              html += '<div class="input-group-append"><button class="btn btn-primary" onclick="onClickOutcome(this)" data-name="outcome-production" data-content="ค่าผลิต">(จ่าย) ค่าผลิต</button></div>';
+            html += '</div>';
+          html += '</div>';
+
+          html += '<div class="col-md-4">';
+            html += '<div class="input-group">';
+              html += '<input type="input" class="form-control" id="outcome-shipping" placeholder="ระบุจำนวน">';
+              html += '<div class="input-group-append"><button class="btn btn-info" onclick="onClickOutcome(this)" data-name="outcome-shipping" data-content="ค่าจัดส่ง">(จ่าย) ค่าจัดส่ง</button></div>';
+            html += '</div>';
+          html += '</div>';
+
+          html += '<div class="col-md-4">';
+            html += '<div class="input-group">';
+              html += '<input type="input" class="form-control" id="outcome-misc" placeholder="ระบุจำนวน">';
+              html += '<div class="input-group-append"><button class="btn btn-light" onclick="onClickOutcome(this)" data-name="outcome-misc" data-content="ค่าใช้จ่าย">ค่าใช้จ่าย</button></div>';
+            html += '</div>';
+          html += '</div>';
+
+          cmdDiv2.innerHTML = html;
+          panel.appendChild(cmdDiv2);
 
           // HR
           panel.appendChild(document.createElement('hr'));
@@ -962,9 +1082,14 @@
         panel.appendChild(table);
 
         var table = new Tabulator("#tabulator-contacts", {
+            maxHeight:450,
             data:arrContacts, //set initial table data
             columns:[
-              {field:"Enable", hozAlign:"center", formatter:"tickCross"},
+              //{field:"Enable", hozAlign:"center", formatter:"tickCross"},
+              {formatter:emailIcon, hozAlign:"center", cellClick:function(e, cell){
+                //console.log(cell);
+                //window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().ContactId);
+              }},
               {formatter:profileIcon, hozAlign:"center", cellClick:function(e, cell){
                 //console.log(cell);
                 window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().SecretKey);
@@ -976,13 +1101,13 @@
                 //console.log(cell);
                 window.open(manUtils.getGlobalVars('shopURL') + "?id=" + cell.getRow().getData().ContactId);
               }},
-              {title:"ขาย (เล่ม)", hozAlign:"right", formatter:function(cell, formatterParams){
+              {title:"(เล่ม)", width:70, hozAlign:"center", formatter:function(cell, formatterParams){
                  return manUtils.formatNumber(cell.getRow().getData().SaleCount, 0);
               }},
-              {title:"รับแล้ว (บ.)", hozAlign:"right", formatter:function(cell, formatterParams){
+              {title:"รับแล้ว", hozAlign:"right", formatter:function(cell, formatterParams){
                  return manUtils.formatNumber(cell.getRow().getData().ShareReceived, 0);
               }},
-              {title:"รอโอน (บ.)", hozAlign:"right", formatter:function(cell, formatterParams){
+              {title:"รอโอน", hozAlign:"right", formatter:function(cell, formatterParams){
                  return manUtils.formatNumber(cell.getRow().getData().ShareAwait, 0);
               }},
               {title:"รอบจ่าย", hozAlign:"center", formatter:function(cell, formatterParams){
@@ -997,10 +1122,8 @@
                     onClickOutcomeCopyright(cell.getRow().getData());
                 }
               }},
-              {title:"ส่ง", width:60, formatter:emailIcon, hozAlign:"center", cellClick:function(e, cell){
-                //console.log(cell);
-                //window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().ContactId);
-              }},
+              {title:"หมายเลขบัญชี", field:"BankAccountId"},
+              {title:"ธนาคาร", field:"BankName"},
             ],
         });
 
@@ -1018,20 +1141,19 @@
         panel.appendChild(table);
 
         var table = new Tabulator("#tabulator-books", {
+            maxHeight:450,
             data:arrProducts, //set initial table data
             columns:[
               {title:"ออกใหม่", field:"Highlight", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
-                    || key == manUtils.getGlobalVars('keyPublisher')
-                    || key == manUtils.getGlobalVars('keyAdmin')) {
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
 
                   swapHighlight(cell.getRow().getData().ProductId, (cell.getRow().getData().Highlight == 'True') ? 'False' : 'True');
                 }
               }},
               {title:"ขายดี", field:"BestSeller", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
-                    || key == manUtils.getGlobalVars('keyPublisher')
-                    || key == manUtils.getGlobalVars('keyAdmin')) {
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
 
                   swapBestSeller(cell.getRow().getData().ProductId, (cell.getRow().getData().BestSeller == 'True') ? 'False' : 'True');
                 }
@@ -1044,16 +1166,14 @@
               {title:"ขาย (เล่ม)", field:"Amount", hozAlign:"center"},
               {title:"ซื้อได้", field:"Available", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
-                    || key == manUtils.getGlobalVars('keyPublisher')
-                    || key == manUtils.getGlobalVars('keyAdmin')) {
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
 
                   swapAvailable(cell.getRow().getData().ProductId, (cell.getRow().getData().Available == 'True') ? 'False' : 'True');
                 }
               }},
               {title:"เฉพาะบุคคล", field:"PrivateSale", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
-                    || key == manUtils.getGlobalVars('keyPublisher')
-                    || key == manUtils.getGlobalVars('keyAdmin')) {
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
 
                   swapPrivateSale(cell.getRow().getData().ProductId, (cell.getRow().getData().PrivateSale == 'True') ? 'False' : 'True');
                 }
@@ -1133,6 +1253,7 @@
         panel.appendChild(table);
 
         var table = new Tabulator("#tabulator-orders", {
+            maxHeight:450,
             data:arrOrders, //set initial table data
             columns:[
               {title:"วันที่สั่งซื้อ", width:100, field:"CreatedDate", headerFilter:"input"},
@@ -1140,7 +1261,7 @@
                 window.open(manUtils.getGlobalVars('checkoutURL') + "?id=" + cell.getRow().getData().OrderId);
               }},
               {title:"เลขที่คำสั่ง", width:120, field:"OrderId"},
-              {title:"สถานะคำสั่ง", width:180, field:"OrderStatus", editor:"select", editorParams:{"ป้อนข้อมูลจัดส่ง":"ป้อนข้อมูลจัดส่ง", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}, headerFilter:true, headerFilterParams:{"ป้อนข้อมูลจัดส่ง":"ป้อนข้อมูลจัดส่ง", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}},
+              {title:"สถานะคำสั่ง", width:170, field:"OrderStatus", editor:"select", editorParams:{"ป้อนข้อมูลจัดส่ง":"ป้อนข้อมูลจัดส่ง", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}, headerFilter:true, headerFilterParams:{"ป้อนข้อมูลจัดส่ง":"ป้อนข้อมูลจัดส่ง", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}},
               {formatter:verifyIcon, hozAlign:"center", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')
@@ -1149,7 +1270,7 @@
                   if ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                       || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')) {
                   } else {
-                    onVerifyPayment(cell.getRow().getData().OrderId, cell.getRow().getData().GrandTotal, cell.getRow().getData().PaymentDate, cell.getRow().getData().PaymentTime);
+                    onVerifyPayment(cell.getRow().getData().OrderId, cell.getRow().getData().GrandTotal, cell.getRow().getData().PaymentDate, cell.getRow().getData().PaymentTime, cell.getRow().getData().ShippingCost);
                   }
                 }
               }},
@@ -1165,7 +1286,7 @@
                   }
                 }
               }},
-              {title:"บ.", width:50, hozAlign:"right", field:"GrandTotal"},
+              {title:"บ.", width:60, hozAlign:"right", field:"GrandTotal"},
               {title:"วันแจ้งโอน", width:100, hozAlign:"center", field:"PaymentDate", headerFilter:"input"},
               {hozAlign:"center", field:"PaymentTime"},
               {title:"", field:"PaymentVerified", hozAlign:"center", formatter:"tickCross"},
@@ -1220,6 +1341,7 @@
         panel.appendChild(table);
 
         var table = new Tabulator("#tabulator-sales", {
+            maxHeight:450,
             data:arrSales, //set initial table data
             columns:[
               {title:"สถานะ", width:160, field:"PaymentStatus", editor:"select", editorParams:{"รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}, headerFilter:true, headerFilterParams:{"รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}},

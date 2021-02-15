@@ -56,6 +56,10 @@ var manUtils = (function() {
     var str = number.replaceAll('-', '');
     return str.slice(0,3) + '-' + str.slice(3,6) + '-' + str.slice(6,10);
   };
+  obj.generateID = function () {
+    id = Date.now();
+    return id;
+  }
   obj.generateRandomLetter = function () {
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 

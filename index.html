@@ -192,7 +192,9 @@
             for (var i in arrPayments) {
              received += Number(arrPayments[i].Outcome);
             }
-
+            var wait = pending - received;
+            //console.log("pending: " + pending);
+            //console.log("received: " + received);
             fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*', {
               method: "PATCH",
               mode: "cors",
@@ -202,14 +204,14 @@
               body: JSON.stringify({
                SaleCount: count,
                ShareReceived: received,
-               ShareAwait: pending - received,
+               ShareAwait: (wait == 0) ? "0" : wait,
               }),
             })
             .then((response) => { return response.json(); })
             .then((myJson) => {
               keyOwner.SaleCount = count;
               keyOwner.ShareReceived = received;
-              keyOwner.ShareAwait = pending;
+              keyOwner.ShareAwait = (wait == 0) ? "0" : wait;
 
               init();
             })
