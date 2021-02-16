@@ -407,6 +407,10 @@
       }
 
       function onVerifyPayment(orderId, grandTotal, datePayment, timePayment, shippingCost) {
+        var div= document.createElement("div");
+        div.className += "overlay";
+        document.body.appendChild(div);
+
         // Update 'Orders'
         // -- Update 'Sales'
         // ---- completePurchase()
@@ -670,6 +674,10 @@
 
       function onClickOutcomeCopyright(contact) {
         if (contact.ShareAwait > 0) {
+          var div= document.createElement("div");
+          div.className += "overlay";
+          document.body.appendChild(div);
+
           var d = new Date();
           var currentDate = d.toISOString().slice(0, 10);
           var currentTime = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(11,16);
