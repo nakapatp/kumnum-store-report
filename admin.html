@@ -125,6 +125,12 @@
         document.getElementById('overlay').remove();
       }
 
+      function disableScreen() {
+        var div= document.createElement("div");
+        div.className += "overlay";
+        document.body.appendChild(div);
+      }
+
       function showPage404() {
         document.getElementById('container-main').style.display = 'none';
         var desc = 'คุณต้องการ <span class="text-primary"><i class="fa fa-key"></i> กุญแจลับ</span> เพื่อเข้าถึงและจัดการเนื้อหาส่วนนี้ได้<br/>';
@@ -247,6 +253,8 @@
       };
 
       function swapHighlight(productId, value) {
+        disableScreen();
+
         fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
           {
             method: "PATCH",
@@ -267,6 +275,8 @@
       }
 
       function swapBestSeller(productId, value) {
+        disableScreen();
+
         fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
           {
             method: "PATCH",
@@ -287,6 +297,8 @@
       }
 
       function swapAvailable(productId, value) {
+        disableScreen();
+
         fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
           {
             method: "PATCH",
@@ -307,6 +319,8 @@
       }
 
       function swapPrivateSale(productId, value) {
+        disableScreen();
+
         fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
           {
             method: "PATCH",
@@ -407,9 +421,7 @@
       }
 
       function onVerifyPayment(orderId, grandTotal, datePayment, timePayment, shippingCost) {
-        var div= document.createElement("div");
-        div.className += "overlay";
-        document.body.appendChild(div);
+        disableScreen();
 
         // Update 'Orders'
         // -- Update 'Sales'
@@ -446,6 +458,8 @@
       }
 
       function onRejectPayment(orderId) {
+        disableScreen();
+
         fetch(sheetURL + '/tabs/Orders/OrderId/*' + orderId + '*',
           {
             method: "PATCH",
@@ -607,6 +621,8 @@
       }
 
       function onClickIncome(obj) {
+        disableScreen();
+
         var elementId = obj.getAttribute('data-name');
         var content = obj.getAttribute('data-content');
         var amount = document.getElementById(elementId).value;
@@ -640,6 +656,8 @@
       }
 
       function onClickOutcome(obj) {
+        disableScreen();
+
         var elementId = obj.getAttribute('data-name');
         var content = obj.getAttribute('data-content');
         var amount = document.getElementById(elementId).value;
@@ -674,9 +692,7 @@
 
       function onClickOutcomeCopyright(contact) {
         if (contact.ShareAwait > 0) {
-          var div= document.createElement("div");
-          div.className += "overlay";
-          document.body.appendChild(div);
+          disableScreen();
 
           var d = new Date();
           var currentDate = d.toISOString().slice(0, 10);
