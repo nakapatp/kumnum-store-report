@@ -32,7 +32,7 @@
   <body>
     <div class="overlay" id="overlay"></div>
 
-    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
+    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0" id="menu-topbar">
       <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="https://store.kumnum.com">ร้านหนังสือ "คำนำ"</a>
     </nav>
 
@@ -1044,7 +1044,7 @@
           html += '<div class="col-md-4">';
             html += '<div class="input-group">';
               html += '<input type="input" class="form-control" id="outcome-misc" placeholder="ระบุจำนวน">';
-              html += '<div class="input-group-append"><button class="btn btn-light" onclick="onClickOutcome(this)" data-name="outcome-misc" data-content="ค่าใช้จ่าย">ค่าใช้จ่าย</button></div>';
+              html += '<div class="input-group-append"><button class="btn btn-outline-secondary" onclick="onClickOutcome(this)" data-name="outcome-misc" data-content="ค่าใช้จ่าย">ค่าใช้จ่าย</button></div>';
             html += '</div>';
           html += '</div>';
 
@@ -1389,6 +1389,7 @@
       function showSidebarMenu(menuId) {
         document.getElementById('menu-website').href = manUtils.getGlobalVars('websiteURL');
 
+        var topMenu = [];
         var menuItems = [];
 
         if (key == manUtils.getGlobalVars('keySuperAdmin')
@@ -1396,16 +1397,27 @@
             || key == manUtils.getGlobalVars('keyViewer')) {
           menuItems.push({icon: 'fa-money', caption: 'การเงิน <span class="badge badge-danger">ฝ่ายการเงิน</span>', name: 'main-dashboard', href: 'admin.html?id=main-dashboard&key=' + key});
         }
+
         menuItems.push({icon: 'fa-user', caption: 'นักเขียน', name: 'main-contact', href: 'admin.html?id=main-contact&key=' + key});
         menuItems.push({icon: 'fa-book', caption: 'หนังสือ', name: 'main-book', href: 'admin.html?id=main-book&key=' + key});
         menuItems.push({icon: 'fa-shopping-cart', caption: 'คำสั่งซื้อ', name: 'main-order', href: 'admin.html?id=main-order&key=' + key});
         menuItems.push({icon: 'fa-clipboard', caption: 'รายการขาย', name: 'main-sale', href: 'admin.html?id=main-sale&key=' + key});
 
         //console.log(key);
+        var htmlTop = "";
         var html = "";
         if (menuItems.length > 0) {
           for (var i in menuItems) {
             var item = menuItems[i];
+
+            var a = document.createElement('a');
+            //a.className = (item.name == menuId) ? "nav-link active" : "nav-link";
+            a.className = "btn btn-outline-light btn-sm";
+            a.style = 'margin: 5px 5px 5px 5px;';
+            a.href = item.href;
+            a.innerHTML = item.caption;
+            document.getElementById('menu-topbar').appendChild(a);
+
             html += '<li class="nav-item">';
               if (item.name == menuId)
                 html += '<a class="nav-link active" href="' + item.href + '">';
