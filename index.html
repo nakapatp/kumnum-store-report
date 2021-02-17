@@ -106,6 +106,34 @@
         document.getElementById('overlay').remove();
       }
 
+      function formatSpec(obj) {
+        var str = "";
+        str += 'ขนาด: ' + obj.Size + '<br>';
+        str += 'หนา: ' + obj.Pages + ' หน้า<br>';
+        str += 'พิมพ์: ' + obj.Printing + '<br>';
+        str += 'กระดาษ: ' + obj.Paper + '<br>';
+        str += 'เข้าเล่ม: ' + obj.Binding + '<br>';
+        str += 'พิเศษ: ' + obj.Special + '<br>';
+        str += 'ระบบการพิมพ์: ' + obj.Production;
+        return str;
+      }
+
+      function getPublicShopUrl(contactId) {
+        return manUtils.getGlobalVars('shopURL') + '?id=' + contactId;
+      }
+
+      function getPublicShopQRCode(contactId) {
+        return manUtils.getGlobalVars('qrCodeURL') + '?id=' + contactId;
+      }
+
+      function getPrivateBookUrl(contactId, productId) {
+        return manUtils.getGlobalVars('shopURL') + '?id=' + contactId + '&book=' + productId;
+      }
+
+      function getPrivateBookQRCode(contactId, productId) {
+        return manUtils.getGlobalVars('qrCodeURL') + '?id=' + contactId + '&book=' + productId;
+      }
+
       function init() {
 
         showSidebarMenu(menuId);
@@ -627,8 +655,8 @@
 
           var html = '';
           html += '<p><ul class="list-group">';
-            html += '<li class="list-group-item">ลิงก์หน้าร้าน&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + keyOwner.PublicShopURL + '" target="_blank">' + keyOwner.PublicShopURL + '</a></li>';
-            html += '<li class="list-group-item">ภาพคิวอาร์โค้ด&nbsp;&nbsp;<i class="fa fa-qrcode fa-lg"></i>&nbsp;&nbsp;<a href="' + keyOwner.ImagePublicShopQR + '" target="_blank">' + keyOwner.ImagePublicShopQR + '</a></li>';
+            html += '<li class="list-group-item">ลิงก์หน้าร้าน&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + getPublicShopURL(keyOwner.ContactId) + '" target="_blank">' + getPublicShopURL(keyOwner.ContactId) + '</a></li>';
+            html += '<li class="list-group-item">ภาพคิวอาร์โค้ด&nbsp;&nbsp;<i class="fa fa-qrcode fa-lg"></i>&nbsp;&nbsp;<a href="' + getPublicShopQRCode(keyOwner.ContactId) + '" target="_blank">' + getPublicShopQRCode(keyOwner.ContactId) + '</a></li>';
           html += '</ul></p>';
           data.Description += html;
           spawnMediaObject(panel, data);
@@ -685,7 +713,7 @@
             }
             var tooltiptext = '';
             html = '<h4>' + arrProducts[i].Price + ' บ.';
-              tooltiptext = arrProducts[i].Spec.replaceAll('<br>', '');
+              tooltiptext = formatSpec(arrProducts[i]).replaceAll('<br>', '&#10');
               html += '<span class="text-secondary"> <small><i class="fa fa-info-circle fa-xs" data-toggle="tooltip" data-placement="top" title="' + tooltiptext + '"></i></small></span>';
             html += '</h4>';
             html += '<p>';
@@ -698,8 +726,8 @@
               //html += ' ค่าผลิต (' + arrProducts[i].Cost + ' บ.) ค่าจัดจำหน่าย (' + (Number(arrProducts[i].PublisherShare) + Number(arrProducts[i].PlatformShare)) + ' บ.)';
             html += '</p>';
             html += '<p><ul class="list-group">';
-              html += '<li class="list-group-item">ลิงก์สั่งซื้อ&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + arrProducts[i].PrivateBookURL + '" target="_blank">' + arrProducts[i].PrivateBookURL + '</a></li>';
-              html += '<li class="list-group-item">ภาพคิวอาร์โค้ด&nbsp;&nbsp;<i class="fa fa-qrcode fa-lg"></i>&nbsp;&nbsp;<a href="' + arrProducts[i].ImagePrivateBookQR + '" target="_blank">' + arrProducts[i].ImagePrivateBookQR + '</a></li>';
+              html += '<li class="list-group-item">ลิงก์สั่งซื้อ&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + getPrivateBookUrl(arrProducts[i].ContactId, arrProducts[i].ProductId) + '" target="_blank">' + getPrivateBookUrl(arrProducts[i].ContactId, arrProducts[i].ProductId) + '</a></li>';
+              html += '<li class="list-group-item">ภาพคิวอาร์โค้ด&nbsp;&nbsp;<i class="fa fa-qrcode fa-lg"></i>&nbsp;&nbsp;<a href="' + getPrivateBookQRCode(arrProducts[i].ContactId, arrProducts[i].ProductId) + '" target="_blank">' + getPrivateBookQRCode(arrProducts[i].ContactId, arrProducts[i].ProductId) + '</a></li>';
             html += '</ul></p>';
             data.Description += html;
             spawnMediaObject(panel, data);

@@ -43,10 +43,10 @@ var manUtils = (function() {
     };
     return date.slice(8, 10) + " " + month[date.slice(5,7)] + " " + (Number(date.slice(0, 4)) + 543);
   };
-  obj.formatName = function(title, firstname, lastname) {
+  obj.formatName = function(title, firstname, lastname, seperateTitle = false) {
     return (firstname.includes("พระ"))
-            ? firstname + " " + lastname + ", " + title
-            : title + firstname + " " + lastname;
+            ? firstname + (seperateTitle && title ? '<br>' : ' ') + lastname + ", " + title
+            : title + ' ' + firstname + " " + lastname;
   };
   obj.formatNumber = function(number, fixed) {
     var str = Number(number).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');

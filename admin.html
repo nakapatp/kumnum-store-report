@@ -118,6 +118,7 @@
             case 'main-dashboard': loadPayments(iPanel); break;
             case 'main-contact': loadContacts(iPanel); break;
             case 'main-book': loadProducts(iPanel); break;
+            case 'main-spec': loadProducts(iPanel); break;
             case 'main-order': loadOrders(iPanel); break;
             case 'main-sale': loadSales(iPanel); break;
             default:
@@ -178,7 +179,9 @@
         .then((myJson) => {
           arrProducts = myJson;
 
-          showBooks(iPanel);
+          if (menuId == 'main-spec')
+            showBookSpec(iPanel);
+          else showBooks(iPanel);
         })
         .catch((error) => { console.log(error); });
       }
@@ -217,8 +220,8 @@
       var cartIcon = function(cell, formatterParams) {
           return "<i class='fa fa-shopping-cart'></i>";
       };
-      var emailIcon = function(cell, formatterParams){
-          return "<i class='fa fa-envelope'></i>";
+      var pencilIcon = function(cell, formatterParams){
+          return "<i class='fa fa-pencil'></i>";
       };
       var profileIcon = function(cell, formatterParams) {
           return "<i class='fa fa-user'></i>";
@@ -238,6 +241,11 @@
       // Generate print icon
       var printIcon = function(cell, formatterParams){
           var icon = (cell.getRow().getData().TrackingCode == '') ? '<span class="text-primary"><i class="fa fa-print"></i></span>' : '<i class="fa fa-print"></i>';
+          return (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์') ? icon : '';
+      };
+      // Generate clipboard-list icon
+      var specIcon = function(cell, formatterParams){
+          var icon = (cell.getRow().getData().TrackingCode == '') ? '<span class="text-primary"><i class="fa fa-clipboard-list"></i></span>' : '<i class="fa fa-clipboard-list"></i>';
           return (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์') ? icon : '';
       };
       // Generate reject icon
@@ -339,6 +347,50 @@
         .then((response) => { return response.json(); })
         .then((data) => {
           window.location.href = "admin.html?id=main-book&key=" + key;
+        })
+        .catch((error) => { console.log(error); });
+      }
+
+      function swapContactNotified(contactId, value) {
+        disableScreen();
+
+        fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*',
+          {
+            method: "PATCH",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              Notified: String(value),
+            }),
+          }
+        )
+        .then((response) => { return response.json(); })
+        .then((data) => {
+          window.location.href = "admin.html?id=main-contact&key=" + key;
+        })
+        .catch((error) => { console.log(error); });
+      }
+
+      function swapOrderNotified(orderId, value) {
+        disableScreen();
+
+        fetch(sheetURL + '/tabs/Orders/OrderId/*' + orderId + '*',
+          {
+            method: "PATCH",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              Notified: String(value),
+            }),
+          }
+        )
+        .then((response) => { return response.json(); })
+        .then((data) => {
+          window.location.href = "admin.html?id=main-order&key=" + key;
         })
         .catch((error) => { console.log(error); });
       }
@@ -1113,9 +1165,12 @@
             data:arrContacts, //set initial table data
             columns:[
               //{field:"Enable", hozAlign:"center", formatter:"tickCross"},
-              {formatter:emailIcon, hozAlign:"center", cellClick:function(e, cell){
-                //console.log(cell);
-                //window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().ContactId);
+              {title:"แจ้ง", field:"Notified", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
+
+                  swapContactNotified(cell.getRow().getData().ContactId, (cell.getRow().getData().Notified == 1) ? 0 : 1);
+                }
               }},
               {formatter:profileIcon, hozAlign:"center", cellClick:function(e, cell){
                 //console.log(cell);
@@ -1205,6 +1260,82 @@
                   swapPrivateSale(cell.getRow().getData().ProductId, (cell.getRow().getData().PrivateSale == 'True') ? 'False' : 'True');
                 }
               }},
+              {formatter:pencilIcon, hozAlign:"center", cellClick:function(e, cell){
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  //window.open(manUtils.getGlobalVars('shopURL') + '?id=' + cell.getRow().getData().ContactId + '&book=' + cell.getRow().getData().ProductId);
+                }
+              }},
+            ],
+        });
+
+        // HR
+        panel.appendChild(document.createElement('hr'));
+      }
+
+      function showBookSpec(panel) {
+        document.getElementById('panel-header').innerHTML = 'หนังสือ (' + arrProducts.length + ')';
+        document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('loremShort');
+        panel.appendChild(document.createElement('hr'));
+
+        var table = document.createElement('div');
+        table.id = 'tabulator-books';
+        panel.appendChild(table);
+
+        var table = new Tabulator("#tabulator-books", {
+            maxHeight:450,
+            data:arrProducts, //set initial table data
+            columns:[
+              /*
+              {title:"ออกใหม่", field:"Highlight", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
+
+                  swapHighlight(cell.getRow().getData().ProductId, (cell.getRow().getData().Highlight == 'True') ? 'False' : 'True');
+                }
+              }},
+              {title:"ขายดี", field:"BestSeller", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
+
+                  swapBestSeller(cell.getRow().getData().ProductId, (cell.getRow().getData().BestSeller == 'True') ? 'False' : 'True');
+                }
+              }},
+              */
+              {formatter:bookIcon, hozAlign:"center", cellClick:function(e, cell){
+                window.open(manUtils.getGlobalVars('shopURL') + '?id=' + cell.getRow().getData().ContactId + '&book=' + cell.getRow().getData().ProductId);
+              }},
+              {title:"ชื่อหนังสือ", width:280, field:"Title", headerFilter:"input"},
+              {title:"ผู้เขียน", width:180, field:"Author", headerFilter:"input"},
+              {title:"ราคา", field:"Price"},
+              {title:"ค่าผลิต", field:"Cost"},
+              /*
+              {title:"ขาย (เล่ม)", field:"Amount", hozAlign:"center"},
+              {title:"ซื้อได้", field:"Available", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
+
+                  swapAvailable(cell.getRow().getData().ProductId, (cell.getRow().getData().Available == 'True') ? 'False' : 'True');
+                }
+              }},
+              {title:"เฉพาะบุคคล", field:"PrivateSale", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
+
+                  swapPrivateSale(cell.getRow().getData().ProductId, (cell.getRow().getData().PrivateSale == 'True') ? 'False' : 'True');
+                }
+              }},
+              {formatter:pencilIcon, hozAlign:"center", cellClick:function(e, cell){
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  //window.open(manUtils.getGlobalVars('shopURL') + '?id=' + cell.getRow().getData().ContactId + '&book=' + cell.getRow().getData().ProductId);
+                }
+              }},
+              */
             ],
         });
 
@@ -1283,7 +1414,7 @@
             maxHeight:450,
             data:arrOrders, //set initial table data
             columns:[
-              {title:"วันที่สั่งซื้อ", width:100, field:"CreatedDate", headerFilter:"input"},
+              //{title:"วันที่สั่งซื้อ", width:100, field:"CreatedDate", headerFilter:"input"},
               {formatter:viewIcon, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('checkoutURL') + "?id=" + cell.getRow().getData().OrderId);
               }},
@@ -1320,6 +1451,9 @@
               {formatter:printIcon, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('invoiceURL') + '?id=' + cell.getRow().getData().OrderId);
               }},
+              {formatter:specIcon, hozAlign:"center", cellClick:function(e, cell){
+                window.open(manUtils.getGlobalVars('specURL') + '?id=' + cell.getRow().getData().OrderId);
+              }},
               {title:"เลขที่พัสดุ", width:100, field:"TrackingCode", editor:"input", cellEdited:function(cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')
@@ -1350,6 +1484,13 @@
                   default: url = "#"
                 }
                 window.open(url);
+              }},
+              {title:"แจ้ง", field:"Notified", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
+
+                  swapOrderNotified(cell.getRow().getData().OrderId, (cell.getRow().getData().Notified == 1) ? 0 : 1);
+                }
               }},
             ],
         });
@@ -1403,6 +1544,7 @@
 
         menuItems.push({icon: 'fa-user', caption: 'นักเขียน', name: 'main-contact', href: 'admin.html?id=main-contact&key=' + key});
         menuItems.push({icon: 'fa-book', caption: 'หนังสือ', name: 'main-book', href: 'admin.html?id=main-book&key=' + key});
+        menuItems.push({icon: 'fa-clipboard-list', caption: 'สเปคหนังสือ', name: 'main-spec', href: 'admin.html?id=main-spec&key=' + key});
         menuItems.push({icon: 'fa-shopping-cart', caption: 'คำสั่งซื้อ', name: 'main-order', href: 'admin.html?id=main-order&key=' + key});
         menuItems.push({icon: 'fa-clipboard', caption: 'รายการขาย', name: 'main-sale', href: 'admin.html?id=main-sale&key=' + key});
 
