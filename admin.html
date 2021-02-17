@@ -475,6 +475,56 @@
         .catch((error) => { console.log(error); });
       }
 
+      function onEditBookSpec(obj, keyName, value) {
+        if (key == manUtils.getGlobalVars('keySuperAdmin')
+            || key == manUtils.getGlobalVars('keyPublisher')
+            || key == manUtils.getGlobalVars('keyAdmin')) {
+
+          var price = obj.Price;
+          var cost = obj.Cost;
+
+          var data = {};
+          if (keyName == 'Price' || keyName == 'Cost') {
+            if (keyName == 'Price') {
+              price = value;
+
+              data["PublisherShare"] = Math.ceil(cost * manUtils.getGlobalVars('publisherShareRatio') / 100);
+              data["PlatformShare"] = Math.ceil(cost * manUtils.getGlobalVars('platformShareRatio') / 100);;
+              data["SharePerUnit"] = Math.ceil(price - cost - data["PublisherShare"] - data["PlatformShare"]);
+              data["CopyrightRatio"] = ((price - cost - data["PublisherShare"] - data["PlatformShare"]) / price) * 100;
+
+            } else if (keyName == 'Cost') {
+              cost = value;
+
+              data["PublisherShare"] = Math.ceil(cost * manUtils.getGlobalVars('publisherShareRatio') / 100);
+              data["PlatformShare"] = Math.ceil(cost * manUtils.getGlobalVars('platformShareRatio') / 100);;
+              data["SharePerUnit"] = Math.ceil(price - cost - data["PublisherShare"] - data["PlatformShare"]);
+              data["CopyrightRatio"] = ((price - cost - data["PublisherShare"] - data["PlatformShare"]) / price) * 100;
+            }
+          }
+          data[keyName] = value;
+
+
+
+          fetch(sheetURL + '/tabs/Products/ProductId/*' + obj.ProductId + '*',
+            {
+              method: "PATCH",
+              mode: "cors",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            }
+          )
+          .then((response) => { return response.json(); })
+          .then((data) => {
+            //console.log(keyName + ':' + value)
+            //window.location.href = "admin.html?id=main-order&key=" + key;
+          })
+          .catch((error) => { console.log(error); });
+        }
+      }
+
       function onVerifyPayment(orderId, grandTotal, datePayment, timePayment, shippingCost) {
         disableScreen();
 
@@ -1260,14 +1310,6 @@
                   swapPrivateSale(cell.getRow().getData().ProductId, (cell.getRow().getData().PrivateSale == 'True') ? 'False' : 'True');
                 }
               }},
-              {formatter:pencilIcon, hozAlign:"center", cellClick:function(e, cell){
-                if (key == manUtils.getGlobalVars('keySuperAdmin')
-                    || key == manUtils.getGlobalVars('keyPublisher')
-                    || key == manUtils.getGlobalVars('keyAdmin')) {
-
-                  //window.open(manUtils.getGlobalVars('shopURL') + '?id=' + cell.getRow().getData().ContactId + '&book=' + cell.getRow().getData().ProductId);
-                }
-              }},
             ],
         });
 
@@ -1289,53 +1331,46 @@
             data:arrProducts, //set initial table data
             columns:[
               /*
-              {title:"ออกใหม่", field:"Highlight", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+              {field:"Enable", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  swapHighlight(cell.getRow().getData().ProductId, (cell.getRow().getData().Highlight == 'True') ? 'False' : 'True');
-                }
-              }},
-              {title:"ขายดี", field:"BestSeller", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
-                if (key == manUtils.getGlobalVars('keySuperAdmin')
-                    || key == manUtils.getGlobalVars('keyPublisher')) {
-
-                  swapBestSeller(cell.getRow().getData().ProductId, (cell.getRow().getData().BestSeller == 'True') ? 'False' : 'True');
+                  onEditBookSpec(cell.getRow().getData(), 'Enable', (cell.getRow().getData().Enable == 'True') ? 'False' : 'True');
                 }
               }},
               */
-              {formatter:bookIcon, hozAlign:"center", cellClick:function(e, cell){
+              {formatter:bookIcon, frozen:true, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('shopURL') + '?id=' + cell.getRow().getData().ContactId + '&book=' + cell.getRow().getData().ProductId);
               }},
-              {title:"ชื่อหนังสือ", width:280, field:"Title", headerFilter:"input"},
-              {title:"ผู้เขียน", width:180, field:"Author", headerFilter:"input"},
-              {title:"ราคา", field:"Price"},
-              {title:"ค่าผลิต", field:"Cost"},
-              /*
-              {title:"ขาย (เล่ม)", field:"Amount", hozAlign:"center"},
-              {title:"ซื้อได้", field:"Available", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
-                if (key == manUtils.getGlobalVars('keySuperAdmin')
-                    || key == manUtils.getGlobalVars('keyPublisher')) {
-
-                  swapAvailable(cell.getRow().getData().ProductId, (cell.getRow().getData().Available == 'True') ? 'False' : 'True');
-                }
+              {title:"ชื่อหนังสือ", width:280, field:"Title", frozen:true},
+              {title:"ผู้เขียน", width:180, field:"Author"},
+              {title:"หนา", field:"Pages", editor:"input", cellEdited:function(cell) {
+                onEditBookSpec(cell.getRow().getData(), 'Pages', cell.getValue());
               }},
-              {title:"เฉพาะบุคคล", field:"PrivateSale", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
-                if (key == manUtils.getGlobalVars('keySuperAdmin')
-                    || key == manUtils.getGlobalVars('keyPublisher')) {
-
-                  swapPrivateSale(cell.getRow().getData().ProductId, (cell.getRow().getData().PrivateSale == 'True') ? 'False' : 'True');
-                }
+              {title:"ขนาด", field:"Size", editor:"select", editorParams:{"B5":"B5", "A5":"A5", "A4":"A4"}, cellEdited:function(cell) {
+                onEditBookSpec(cell.getRow().getData(), 'Size', cell.getValue());
               }},
-              {formatter:pencilIcon, hozAlign:"center", cellClick:function(e, cell){
-                if (key == manUtils.getGlobalVars('keySuperAdmin')
-                    || key == manUtils.getGlobalVars('keyPublisher')
-                    || key == manUtils.getGlobalVars('keyAdmin')) {
-
-                  //window.open(manUtils.getGlobalVars('shopURL') + '?id=' + cell.getRow().getData().ContactId + '&book=' + cell.getRow().getData().ProductId);
-                }
+              {title:"พิมพ์", field:"Printing", editor:"select", editorParams:{"ปกสี / เนื้อในสี":"ปกสี / เนื้อในสี", "ปกสี / เนื้อในขาวดำ":"ปกสี / เนื้อในขาวดำ"}, cellEdited:function(cell) {
+                onEditBookSpec(cell.getRow().getData(), 'Printing', cell.getValue());
               }},
-              */
+              {title:"กระดาษ", field:"Paper", editor:"select", editorParams:{"อาร์ต 260 แกรม / ปอนด์ 70 แกรม":"อาร์ต 260 แกรม / ปอนด์ 70 แกรม", "อาร์ต 260 แกรม / ถนอมสายตา 75 แกรม":"อาร์ต 260 แกรม / ถนอมสายตา 75 แกรม"}, cellEdited:function(cell) {
+                onEditBookSpec(cell.getRow().getData(), 'Paper', cell.getValue());
+              }},
+              {title:"เข้าเล่ม", field:"Binding", editor:"select", editorParams:{"ไสกาว":"ไสกาว", "เย็บมุงหลังคา":"เย็บมุงหลังคา"}, cellEdited:function(cell) {
+                onEditBookSpec(cell.getRow().getData(), 'Binding', cell.getValue());
+              }},
+              {title:"พิเศษ", field:"Special", editor:"select", editorParams:{"ปกเคลือบด้าน":"ปกเคลือบด้าน", "ปกเคลือบมัน":"ปกเคลือบมัน", "ไม่มี":"ไม่มี"}, cellEdited:function(cell) {
+                onEditBookSpec(cell.getRow().getData(), 'Special', cell.getValue());
+              }},
+              {title:"ระบบพิมพ์", field:"Production", editor:"select", editorParams:{"Digital print":"Digital print", "Offset print":"Offset print"}, cellEdited:function(cell) {
+                onEditBookSpec(cell.getRow().getData(), 'Production', cell.getValue());
+              }},
+              {title:"ราคา", field:"Price", editor:"input", cellEdited:function(cell) {
+                onEditBookSpec(cell.getRow().getData(), 'Price', cell.getValue());
+              }},
+              {title:"ค่าผลิต", field:"Cost", editor:"input", cellEdited:function(cell) {
+                onEditBookSpec(cell.getRow().getData(), 'Cost', cell.getValue());
+              }},
             ],
         });
 
@@ -1461,7 +1496,7 @@
 
                   if (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                     onInputTrackingId(cell.getRow().getData().OrderId, cell.getValue());
-                  else window.location.href = "admin.html?id=main-order&key=" + key;
+                  //else window.location.href = "admin.html?id=main-order&key=" + key;
                 }
               }},
               {title:"ขนส่ง", width:80, field:"Transporter", editor:"select", editorParams:{"Flash":"Flash", "J&T":"J&T", "Kerry":"Kerry", "ThaiPost":"ThaiPost"}, cellEdited:function(cell){
@@ -1471,7 +1506,6 @@
 
                   if (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                     onSelectTransporter(cell.getRow().getData().OrderId, cell.getValue());
-                  else window.location.href = "admin.html?id=main-order&key=" + key;
                 }
               }},
               {formatter:trackingIcon, hozAlign:"center", cellClick:function(e, cell){
