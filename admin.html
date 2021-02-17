@@ -253,14 +253,14 @@
           return ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                   || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน'))
                 ? ''
-                : (cell.getRow().getData().VerifyRejected  == 1) ? "<i class='fa fa-times'></i>" : '<span class="text-danger"><i class="fa fa-thumbs-down"></i></span>';
+                : (cell.getRow().getData().VerifyRejected  == 1) ? '<span class="text-danger"><i class="fa fa-times"></i></span>' : '<span class="text-danger"><i class="fa fa-thumbs-down"></i></span>';
       };
       // Generate confirm icon
       var verifyIcon = function(cell, formatterParams){
           return ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                   || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน'))
                   ? ''
-                  : (cell.getRow().getData().PaymentVerified  == 1) ? "<i class='fa fa-check'></i>" : '<span class="text-danger"><i class="fa fa-thumbs-up"></i></span>';
+                  : (cell.getRow().getData().VerifyRejected  == 1) ? '' : '<span class="text-danger"><i class="fa fa-thumbs-up"></i></span>';
       };
 
       function swapHighlight(productId, value) {
@@ -826,6 +826,7 @@
           .then((response) => { return response.json(); })
           .then((myJson) => {
             var received = Number(contact.ShareReceived) + Number(contact.ShareAwait);
+
             fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contact.ContactId + '*', {
               method: "PATCH",
               mode: "cors",
@@ -834,6 +835,7 @@
               },
               body: JSON.stringify({
                  ShareReceived: received,
+                 ShareLatest: contact.ShareAwait,
                  ShareAwait: "0",
                  NextPaid: nextDate.toISOString().slice(0, 10),
               }),
@@ -1462,7 +1464,8 @@
 
                   if ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                       || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')) {
-                  } else {
+
+                  } else if (cell.getRow().getData().PaymentVerified == 0 && cell.getRow().getData().VerifyRejected == 0) {
                     onVerifyPayment(cell.getRow().getData().OrderId, cell.getRow().getData().GrandTotal, cell.getRow().getData().PaymentDate, cell.getRow().getData().PaymentTime, cell.getRow().getData().ShippingCost);
                   }
                 }
@@ -1474,7 +1477,8 @@
 
                   if ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                       || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')) {
-                  } else {
+
+                  } else if (cell.getRow().getData().PaymentVerified == 0 && cell.getRow().getData().VerifyRejected == 0) {
                     onRejectPayment(cell.getRow().getData().OrderId);
                   }
                 }
