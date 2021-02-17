@@ -118,7 +118,7 @@
         return str;
       }
 
-      function getPublicShopUrl(contactId) {
+      function getPublicShopURL(contactId) {
         return manUtils.getGlobalVars('shopURL') + '?id=' + contactId;
       }
 
@@ -126,7 +126,7 @@
         return manUtils.getGlobalVars('qrCodeURL') + '?id=' + contactId;
       }
 
-      function getPrivateBookUrl(contactId, productId) {
+      function getPrivateBookURL(contactId, productId) {
         return manUtils.getGlobalVars('shopURL') + '?id=' + contactId + '&book=' + productId;
       }
 
@@ -726,7 +726,7 @@
               //html += ' ค่าผลิต (' + arrProducts[i].Cost + ' บ.) ค่าจัดจำหน่าย (' + (Number(arrProducts[i].PublisherShare) + Number(arrProducts[i].PlatformShare)) + ' บ.)';
             html += '</p>';
             html += '<p><ul class="list-group">';
-              html += '<li class="list-group-item">ลิงก์สั่งซื้อ&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + getPrivateBookUrl(arrProducts[i].ContactId, arrProducts[i].ProductId) + '" target="_blank">' + getPrivateBookUrl(arrProducts[i].ContactId, arrProducts[i].ProductId) + '</a></li>';
+              html += '<li class="list-group-item">ลิงก์สั่งซื้อ&nbsp;&nbsp;<i class="fa fa-globe fa-lg"></i>&nbsp;&nbsp;<a href="' + getPrivateBookURL(arrProducts[i].ContactId, arrProducts[i].ProductId) + '" target="_blank">' + getPrivateBookURL(arrProducts[i].ContactId, arrProducts[i].ProductId) + '</a></li>';
               html += '<li class="list-group-item">ภาพคิวอาร์โค้ด&nbsp;&nbsp;<i class="fa fa-qrcode fa-lg"></i>&nbsp;&nbsp;<a href="' + getPrivateBookQRCode(arrProducts[i].ContactId, arrProducts[i].ProductId) + '" target="_blank">' + getPrivateBookQRCode(arrProducts[i].ContactId, arrProducts[i].ProductId) + '</a></li>';
             html += '</ul></p>';
             data.Description += html;
