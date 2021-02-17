@@ -59,6 +59,13 @@ body {
 /*
  * Navbar
  */
+.topnav {
+  overflow: hidden;
+}
+
+.topnav-right {
+  float: right;
+}
 
 .navbar-brand {
   padding-top: .75rem;
