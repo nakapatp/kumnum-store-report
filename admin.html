@@ -263,19 +263,19 @@
                   : (cell.getRow().getData().VerifyRejected  == 1) ? '' : '<span class="text-danger"><i class="fa fa-thumbs-up"></i></span>';
       };
 
-      function swapHighlight(productId, value) {
+      function onEditBook(obj, keyName, value) {
         disableScreen();
 
-        fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
+        var data = {};
+        data[keyName] = value;
+        fetch(sheetURL + '/tabs/Products/ProductId/*' + obj.ProductId + '*',
           {
             method: "PATCH",
             mode: "cors",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              Highlight: value,
-            }),
+            body: JSON.stringify(data),
           }
         )
         .then((response) => { return response.json(); })
@@ -285,70 +285,30 @@
         .catch((error) => { console.log(error); });
       }
 
-      function swapBestSeller(productId, value) {
-        disableScreen();
+      function onEditContact(obj, keyName, value) {
+        if (key == manUtils.getGlobalVars('keySuperAdmin')
+            || key == manUtils.getGlobalVars('keyPublisher')) {
 
-        fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
-          {
-            method: "PATCH",
-            mode: "cors",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              BestSeller: value,
-            }),
-          }
-        )
-        .then((response) => { return response.json(); })
-        .then((data) => {
-          window.location.href = "admin.html?id=main-book&key=" + key;
-        })
-        .catch((error) => { console.log(error); });
-      }
+          //disableScreen();
 
-      function swapAvailable(productId, value) {
-        disableScreen();
-
-        fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
-          {
-            method: "PATCH",
-            mode: "cors",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              Available: value,
-            }),
-          }
-        )
-        .then((response) => { return response.json(); })
-        .then((data) => {
-          window.location.href = "admin.html?id=main-book&key=" + key;
-        })
-        .catch((error) => { console.log(error); });
-      }
-
-      function swapPrivateSale(productId, value) {
-        disableScreen();
-
-        fetch(sheetURL + '/tabs/Products/ProductId/*' + productId + '*',
-          {
-            method: "PATCH",
-            mode: "cors",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              PrivateSale: value,
-            }),
-          }
-        )
-        .then((response) => { return response.json(); })
-        .then((data) => {
-          window.location.href = "admin.html?id=main-book&key=" + key;
-        })
-        .catch((error) => { console.log(error); });
+          var data = {};
+          data[keyName] = value;
+          fetch(sheetURL + '/tabs/Contacts/ContactId/*' + obj.ContactId + '*',
+            {
+              method: "PATCH",
+              mode: "cors",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            }
+          )
+          .then((response) => { return response.json(); })
+          .then((data) => {
+            //window.location.href = "admin.html?id=main-book&key=" + key;
+          })
+          .catch((error) => { console.log(error); });
+        }
       }
 
       function swapContactNotified(contactId, value) {
@@ -503,8 +463,6 @@
             }
           }
           data[keyName] = value;
-
-
 
           fetch(sheetURL + '/tabs/Products/ProductId/*' + obj.ProductId + '*',
             {
@@ -931,17 +889,6 @@
         //costMisc = collectiveMiscCost - outcomeMisc;
         collectiveMiscCost = outcomeMisc;
 
-        // Balance
-        var data = {
-          ElementID: 'bank-balance',
-          Title: 'ยอดคงเหลือในบัญชี',
-          Value: manUtils.formatNumber(bankBalance, 0),
-          Unit: 'บาท',
-          TextColor: 'white',
-          Color: 'success',
-          Remark: '= ส่วนแบ่งรอโอน + ส่วนต่างคงเหลือ',
-        };
-        spawnCard(deck, data);
 
         // Main Income
         var data = {
@@ -967,6 +914,18 @@
         };
         spawnCard(deck, data);
 
+        // Balance
+        var data = {
+          ElementID: 'bank-balance',
+          Title: 'ยอดคงเหลือในบัญชี',
+          Value: manUtils.formatNumber(bankBalance, 0),
+          Unit: 'บาท',
+          TextColor: 'white',
+          Color: 'success',
+          Remark: '= ส่วนแบ่งรอโอน + ส่วนต่างคงเหลือ',
+        };
+        spawnCard(deck, data);
+
         var pShare = document.createElement('p');
         pShare.innerHTML = '<h3>รายจ่าย</h3><p>รายจ่ายของแพลตฟอร์มมี 6 ทาง ได้แก่ ส่วนแบ่งสำนักพิมพ์, ค่าลิขสิทธิ์, ส่วนแบ่งแฟลตฟอร์ม, ค่าผลิต, ค่าจัดส่ง และค่าใช้จ่ายอื่น ๆ</p>';
         panel.appendChild(pShare);
@@ -987,18 +946,6 @@
         };
         spawnCard(deckShare, data);
 
-        // Copyright Share
-        var data = {
-          ElementID: 'share-copyright',
-          Title: 'ค่าลิขสิทธิ์รอโอน <sup>4</sup>',
-          Value: manUtils.formatNumber(shareCopyright, 0),
-          Unit: 'บาท',
-          TextColor: 'white',
-          Color: 'secondary',
-          Remark: 'ค่าลิขสิทธิ์สะสม ' + manUtils.formatNumber(collectiveShareCopyright, 0) + ' บ.',
-        };
-        spawnCard(deckShare, data);
-
         // Platform Share
         var data = {
           ElementID: 'share-platform',
@@ -1006,8 +953,20 @@
           Value: manUtils.formatNumber(sharePlatform, 0),
           Unit: 'บาท',
           TextColor: 'white',
-          Color: 'dark',
+          Color: 'primary',
           Remark: 'ส่วนแบ่งแพลตฟอร์มสะสม ' + manUtils.formatNumber(collectiveSharePlatform, 0) + ' บ.',
+        };
+        spawnCard(deckShare, data);
+
+        // Copyright Share
+        var data = {
+          ElementID: 'share-copyright',
+          Title: 'ค่าลิขสิทธิ์รอโอน <sup>4</sup>',
+          Value: manUtils.formatNumber(shareCopyright, 0),
+          Unit: 'บาท',
+          TextColor: 'white',
+          Color: 'primary',
+          Remark: 'ค่าลิขสิทธิ์สะสม ' + manUtils.formatNumber(collectiveShareCopyright, 0) + ' บ.',
         };
         spawnCard(deckShare, data);
 
@@ -1025,7 +984,7 @@
           Value: manUtils.formatNumber(costProduction, 0),
           Unit: 'บาท',
           TextColor: 'white',
-          Color: 'primary',
+          Color: 'info',
           Remark: 'ค่าผลิตสะสม ' + manUtils.formatNumber(collectiveProductionCost, 0) + ' บ.',
         };
         spawnCard(deckExpense, data);
@@ -1256,8 +1215,12 @@
                     onClickOutcomeCopyright(cell.getRow().getData());
                 }
               }},
-              {title:"หมายเลขบัญชี", field:"BankAccountId"},
-              {title:"ธนาคาร", field:"BankName"},
+              {title:"หมายเลขบัญชี", field:"BankAccountId", editor:"input", cellEdited:function(cell){
+                onEditContact(cell.getRow().getData(), 'BankAccountId', cell.getValue());
+              }},
+              {title:"ธนาคาร", field:"BankName", editor:"select", editorParams:{"ธ.กรุงเทพ":"ธ.กรุงเทพ", "ธ.กสิกรไทย":"ธ.กสิกรไทย", "ธ.ไทยพาณิชย์":"ธ.ไทยพาณิชย์", "ธ.กรุงไทย":"ธ.กรุงไทย", "ธ.ทหารไทย":"ธ.ทหารไทย", "ธ.ออมสิน":"ธ.ออมสิน", "ธ.กรุงศรีอยุธยา":"ธ.กรุงศรีอยุธยา", "พร้อมเพย์":"พร้อมเพย์"}, cellEdited:function(cell) {
+                onEditContact(cell.getRow().getData(), 'BankName', cell.getValue());
+              }},
             ],
         });
 
@@ -1282,14 +1245,14 @@
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  swapHighlight(cell.getRow().getData().ProductId, (cell.getRow().getData().Highlight == 'True') ? 'False' : 'True');
+                  onEditBook(cell.getRow().getData(), 'Highlight', (cell.getRow().getData().Highlight == 'True') ? 'False' : 'True');
                 }
               }},
               {title:"ขายดี", field:"BestSeller", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  swapBestSeller(cell.getRow().getData().ProductId, (cell.getRow().getData().BestSeller == 'True') ? 'False' : 'True');
+                  onEditBook(cell.getRow().getData(), 'BestSeller', (cell.getRow().getData().BestSeller == 'True') ? 'False' : 'True');
                 }
               }},
               {formatter:bookIcon, hozAlign:"center", cellClick:function(e, cell){
@@ -1302,14 +1265,14 @@
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  swapAvailable(cell.getRow().getData().ProductId, (cell.getRow().getData().Available == 'True') ? 'False' : 'True');
+                  onEditBook(cell.getRow().getData(), 'Available', (cell.getRow().getData().Available == 'True') ? 'False' : 'True');
                 }
               }},
               {title:"เฉพาะบุคคล", field:"PrivateSale", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  swapPrivateSale(cell.getRow().getData().ProductId, (cell.getRow().getData().PrivateSale == 'True') ? 'False' : 'True');
+                  onEditBook(cell.getRow().getData(), 'PrivateSale', (cell.getRow().getData().PrivateSale == 'True') ? 'False' : 'True');
                 }
               }},
             ],
@@ -1349,10 +1312,10 @@
               {title:"หนา", field:"Pages", editor:"input", cellEdited:function(cell) {
                 onEditBookSpec(cell.getRow().getData(), 'Pages', cell.getValue());
               }},
-              {title:"ขนาด", field:"Size", editor:"select", editorParams:{"B5":"B5", "A5":"A5", "A4":"A4"}, cellEdited:function(cell) {
+              {title:"ขนาด", field:"Size", editor:"select", editorParams:{"B5":"B5", "A5":"A5", "A4":"A4", "Letter":"Letter", "Special":"Special"}, cellEdited:function(cell) {
                 onEditBookSpec(cell.getRow().getData(), 'Size', cell.getValue());
               }},
-              {title:"พิมพ์", field:"Printing", editor:"select", editorParams:{"ปกสี / เนื้อในสี":"ปกสี / เนื้อในสี", "ปกสี / เนื้อในขาวดำ":"ปกสี / เนื้อในขาวดำ"}, cellEdited:function(cell) {
+              {title:"พิมพ์", field:"Printing", editor:"select", editorParams:{"ปกสี / เนื้อในสี":"ปกสี / เนื้อในสี", "ปกสี / เนื้อในขาวดำ":"ปกสี / เนื้อในขาวดำ", "ปกขาวดำ / เนื้อในขาวดำ":"ปกขาวดำ / เนื้อในขาวดำ"}, cellEdited:function(cell) {
                 onEditBookSpec(cell.getRow().getData(), 'Printing', cell.getValue());
               }},
               {title:"กระดาษ", field:"Paper", editor:"select", editorParams:{"อาร์ต 260 แกรม / ปอนด์ 70 แกรม":"อาร์ต 260 แกรม / ปอนด์ 70 แกรม", "อาร์ต 260 แกรม / ถนอมสายตา 75 แกรม":"อาร์ต 260 แกรม / ถนอมสายตา 75 แกรม"}, cellEdited:function(cell) {
@@ -1361,7 +1324,7 @@
               {title:"เข้าเล่ม", field:"Binding", editor:"select", editorParams:{"ไสกาว":"ไสกาว", "เย็บมุงหลังคา":"เย็บมุงหลังคา"}, cellEdited:function(cell) {
                 onEditBookSpec(cell.getRow().getData(), 'Binding', cell.getValue());
               }},
-              {title:"พิเศษ", field:"Special", editor:"select", editorParams:{"ปกเคลือบด้าน":"ปกเคลือบด้าน", "ปกเคลือบมัน":"ปกเคลือบมัน", "ไม่มี":"ไม่มี"}, cellEdited:function(cell) {
+              {title:"ปกหนังสือ", field:"Special", editor:"select", editorParams:{"ปกเคลือบด้าน":"ปกเคลือบด้าน", "ปกเคลือบมัน":"ปกเคลือบมัน", "ไม่เคลือบ":"ไม่เคลือบ"}, cellEdited:function(cell) {
                 onEditBookSpec(cell.getRow().getData(), 'Special', cell.getValue());
               }},
               {title:"ระบบพิมพ์", field:"Production", editor:"select", editorParams:{"Digital print":"Digital print", "Offset print":"Offset print"}, cellEdited:function(cell) {
