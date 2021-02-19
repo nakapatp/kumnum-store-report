@@ -62,6 +62,31 @@
           </div>
         </main>
       </div>
+
+      <div id="modalEditProfile" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-sm">
+
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title" id="modal-title">แก้ไขข้อมูลส่วนตัว</h4>
+            </div>
+            <div class="modal-body">
+              โทรศัพท์
+              <input type="text" class="form-control" name="phone" id="phone">
+              อีเมล
+              <input type="text" class="form-control" name="email" id="email">
+              ไลน์ไอดี
+              <input type="text" class="form-control" name="lineId" id="lineId">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light" data-dismiss="modal">ยกเลิก</button>
+              <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="onEditContact()" >บันทึก</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
     <!-- 404 Page -->
     <div class="container" id="container-404">
@@ -113,7 +138,7 @@
         str += 'พิมพ์: ' + obj.Printing + '<br>';
         str += 'กระดาษ: ' + obj.Paper + '<br>';
         str += 'เข้าเล่ม: ' + obj.Binding + '<br>';
-        str += 'ปกหนังสือ: ' + obj.Special + '<br>';
+        str += 'ปกหนังสือ: ' + obj.Cover + '<br>';
         str += 'ระบบการพิมพ์: ' + obj.Production;
         return str;
       }
@@ -148,6 +173,38 @@
           default:
         }
         document.getElementById('overlay').remove();
+      }
+
+      function disableScreen() {
+        var div= document.createElement("div");
+        div.className += "overlay";
+        document.body.appendChild(div);
+      }
+
+      function onEditContact() {
+        disableScreen();
+
+        fetch(sheetURL + '/tabs/Contacts/ContactId/*' + keyOwner.ContactId + '*',
+          {
+            method: "PATCH",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              Phone: document.getElementById('phone').value,
+              Email: document.getElementById('email').value,
+              LineId: document.getElementById('lineId').value,
+            }),
+          }
+        )
+        .then((response) => { return response.json(); })
+        .then((data) => {
+          //console.log(phone + ', ' + email);
+          window.location.href = "index.html?id=main-profile&key=" + key;
+          //window.location.href = manUtils.getGlobalVars('reportURL') + '?id=main-profile&key=' + key;
+        })
+        .catch((error) => { console.log(error); });
       }
 
       function loadContactsByKey(keyId) {
@@ -614,18 +671,22 @@
         panel.appendChild(document.createElement('hr'));
 
         if (keyOwner) {
+          document.getElementById('phone').value = manUtils.formatPhoneNumber(keyOwner.Phone);
+          document.getElementById('email').value = keyOwner.Email;
+          document.getElementById('lineId').value = keyOwner.LineId;
+
           var data = {
             Title: manUtils.formatName(keyOwner.Title, keyOwner.FirstName, keyOwner.LastName),
             Description: keyOwner.Biography,
             imageURL: keyOwner.ImageProfile,
-            maxWidth: 200,
+            maxWidth: 220,
           };
 
           var html = '';
           html += '<ul class="list-group">';
-            html += '<li class="list-group-item"><i class="fa fa-phone fa-lg"></i>&nbsp;&nbsp;' + keyOwner.Phone + ' <div class="badge badge-danger">งดเผยแพร่</div></li>';
-            html += '<li class="list-group-item"><i class="fa fa-envelope fa-lg"></i>&nbsp;&nbsp;' + keyOwner.Email + ' <div class="badge badge-success">เผยแพร่</div></li>';
-            if (keyOwner.LineId) html += '<li class="list-group-item"><i class="fab fa-line fa-lg"></i>&nbsp;&nbsp;' + keyOwner.LineId + ' <div class="badge badge-success">เผยแพร่</div></li>';
+            html += '<li class="list-group-item"><i class="fa fa-phone fa-lg"></i>&nbsp;&nbsp;' + keyOwner.Phone + ' <div class="badge badge-danger">งดเผยแพร่</div>&nbsp;&nbsp;<a data-toggle="modal" data-target="#modalEditProfile"><i class="fa fa-pencil"></i></a></li>';
+            html += '<li class="list-group-item"><i class="fa fa-envelope fa-lg"></i>&nbsp;&nbsp;' + keyOwner.Email + ' <div class="badge badge-success">เผยแพร่</div>&nbsp;&nbsp;<a data-toggle="modal" data-target="#modalEditProfile"><i class="fa fa-pencil"></i></a></li>';
+            if (keyOwner.LineId) html += '<li class="list-group-item"><i class="fab fa-line fa-lg"></i>&nbsp;&nbsp;' + keyOwner.LineId + ' <div class="badge badge-success">เผยแพร่</div>&nbsp;&nbsp;<a data-toggle="modal" data-target="#modalEditProfile"><i class="fa fa-pencil"></i></a></li>';
             html += '<li class="list-group-item"><i class="fa fa-money fa-lg"></i>&nbsp;&nbsp;' + keyOwner.BankAccountId + '&nbsp;&nbsp;' + keyOwner.BankName + ' <div class="badge badge-danger">งดเผยแพร่</div></li>';
             html += '<li class="list-group-item"><i class="fa fa-calendar fa-lg"></i>&nbsp;&nbsp;รับส่วนแบ่งค่าลิขสิทธิ์ทุก ' + keyOwner.BillPeriod + ' เดือน</li>';
           html += '</ul>';

@@ -25,8 +25,22 @@ var manUtils = (function() {
 
     return raw;
   };
-  obj.formatDateThai = function(date) {
+  obj.formatDateThai = function(date, short = false) {
     var str = "";
+    var shortMonth = {
+      '01': 'ม.ค.',
+      '02': 'ก.พ.',
+      '03': 'มี.ค.',
+      '04': 'เม.ย.',
+      '05': 'พ.ค.',
+      '06': 'มิ.ย.',
+      '07': 'ก.ค.',
+      '08': 'ส.ค.',
+      '09': 'ก.ย.',
+      '10': 'ต.ค.',
+      '11': 'พ.ย.',
+      '12': 'ธ.ค.',
+    };
     var month = {
       '01': 'มกราคม',
       '02': 'กุมภาพันธ์',
@@ -41,7 +55,9 @@ var manUtils = (function() {
       '11': 'พฤศจิกายน',
       '12': 'ธันวาคม',
     };
-    return date.slice(8, 10) + " " + month[date.slice(5,7)] + " " + (Number(date.slice(0, 4)) + 543);
+    return (short)
+           ? date.slice(8, 10) + " " + shortMonth[date.slice(5,7)] + " " + (Number(date.slice(0, 4)) + 543)
+           : date.slice(8, 10) + " " + month[date.slice(5,7)] + " " + (Number(date.slice(0, 4)) + 543);
   };
   obj.formatName = function(title, firstname, lastname, seperateTitle = false) {
     return (firstname.includes("พระ"))

@@ -102,6 +102,7 @@
       var arrProducts = null;
       var arrOrders = null;
       var arrSales = null;
+      var arrNewContacts = null;
 
       function init() {
 
@@ -165,7 +166,17 @@
         .then((myJson) => {
           arrContacts = myJson;
 
-          showContacts(iPanel);
+          // GET NewContact
+          fetch(sheetURL + '/tabs/NewContact')
+          .then((response) => {
+              return response.json();
+          })
+          .then((myJson) => {
+            arrNewContacts = myJson;
+
+            showContacts(iPanel);
+          })
+          .catch((error) => { console.log(error); });
         })
         .catch((error) => { console.log(error); });
       }
@@ -262,6 +273,30 @@
                   ? ''
                   : (cell.getRow().getData().VerifyRejected  == 1) ? '' : '<span class="text-danger"><i class="fa fa-thumbs-up"></i></span>';
       };
+
+      function onEditTab(obj, tabName, queryKey, keyName, value, refresh = false) {
+        //disableScreen();
+
+        var data = {};
+        data[keyName] = value;
+
+        fetch(sheetURL + '/tabs/' + tabName + '/' + queryKey + '/*' + obj[queryKey] + '*',
+          {
+            method: "PATCH",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          }
+        )
+        .then((response) => { return response.json(); })
+        .then((data) => {
+          if (refresh)
+            window.location.href = "admin.html?id=main-book&key=" + key;
+        })
+        .catch((error) => { console.log(error); });
+      }
 
       function onEditBook(obj, keyName, value) {
         disableScreen();
@@ -1131,11 +1166,25 @@
         deck.className = 'card-deck mb-3 text-center';
         panel.appendChild(deck);
 
+        var numOfAwait = 0;
+        var numOfNewContact = 0;
+
+        if (arrNewContacts.length > 0) {
+          for (var i in arrNewContacts)
+            numOfNewContact++;
+        }
+        for (var i in arrContacts) {
+          var d = new Date();
+          var next = new Date(arrContacts[i].NextPaid);
+          var diff = next.getDate() - d.getDate();
+          if (diff <= 3 && arrContacts[i].ShareAwait > 0) numOfAwait++;
+        }
+
         // Due Payment
         var data = {
           ElementID: 'payment-instantly',
           Title: 'รายการต้องโอน',
-          Value: manUtils.formatNumber(0, 0),
+          Value: manUtils.formatNumber(numOfAwait, 0),
           Unit: 'รายการ',
           TextColor: 'white',
           Color: 'danger',
@@ -1146,8 +1195,8 @@
         // Application Approve
         var data = {
           ElementID: 'application-approval',
-          Title: 'รออนุมัติใบสมัคร',
-          Value: manUtils.formatNumber(0, 0),
+          Title: 'รอจัดการใบสมัคร',
+          Value: manUtils.formatNumber(numOfNewContact, 0),
           Unit: 'ราย',
           TextColor: 'white',
           Color: 'primary',
@@ -1159,7 +1208,7 @@
         var data = {
           ElementID: 'active-contacts',
           Title: 'จำนวนนักเขียน',
-          Value: manUtils.formatNumber(0, 0),
+          Value: manUtils.formatNumber(manUtils.getGlobalVars('numOfContacts'), 0),
           Unit: 'คน',
           TextColor: 'white',
           Color: 'success',
@@ -1187,7 +1236,7 @@
                 //console.log(cell);
                 window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().SecretKey);
               }},
-              {title:"ชื่อ", field:"FirstName", headerFilter:"input", formatter:function(cell, formatterParams){
+              {title:"ชื่อ", width:180, field:"FirstName", formatter:function(cell, formatterParams){
                  return manUtils.formatName(cell.getRow().getData().Title, cell.getRow().getData().FirstName, cell.getRow().getData().LastName);
               }},
               {formatter:cartIcon, hozAlign:"center", cellClick:function(e, cell){
@@ -1206,7 +1255,13 @@
               {title:"รอบจ่าย", hozAlign:"center", formatter:function(cell, formatterParams){
                 return cell.getRow().getData().BillPeriod + ' เดือน';
               }},
-              {title:"รอบหน้า", field:"NextPaid", width:100, headerFilter:"input"},
+              {title:"รอบหน้า", field:"NextPaid", width:100, formatter:function(cell, formatterParams){
+                var d = new Date();
+                var next = new Date(cell.getRow().getData().NextPaid);
+                var diff = next.getDate() - d.getDate();
+                var text = manUtils.formatDateThai(cell.getRow().getData().NextPaid, true);
+                return (diff <= 3 && cell.getRow().getData().ShareAwait > 0) ? '<span class="text-danger">' + text + '</span>' : text;
+              }},
               {title:"โอน", formatter:thumbsUpIcon, hozAlign:"center", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
@@ -1226,6 +1281,61 @@
 
         // HR
         panel.appendChild(document.createElement('hr'));
+
+        // Table of Sales Summary
+        var hTableNewContact = document.createElement('h3');
+        hTableNewContact.innerHTML = 'ใบสมัครรอจัดการ (' + numOfNewContact + ')';
+        panel.appendChild(hTableNewContact);
+
+        var pTableNewContact = document.createElement('p');
+        pTableNewContact.innerHTML = manUtils.getGlobalVars('loremShort');
+        panel.appendChild(pTableNewContact);
+
+        var tableNewContact = document.createElement('div');
+        tableNewContact.id = 'tabulator-new-contact';
+        panel.appendChild(tableNewContact);
+
+        var table = new Tabulator("#tabulator-new-contact", {
+            maxHeight:450,
+            data:arrNewContacts, //set initial table data
+            columns:[
+              {title:"นำ", field:"Title", editor:"select", editorParams:{"":"", "ผศ.":"ผศ.", "ผศ.ดร.":"ผศ.ดร.", "ดร.":"ดร."}, cellEdited:function(cell) {
+                //onEditBookSpec(cell.getRow().getData(), 'คำนำหน้า', cell.getValue());
+                onEditTab(cell.getRow().getData(), 'NewContact', 'Phone', 'Title', cell.getValue());
+              }},
+              {title:"ชื่อ", field:"FirstName"},
+              {title:"นามสกุล", field:"LastName"},
+              {title:"โทรศัพท์", field:"Phone"},
+              {title:"อีเมล", field:"Email"},
+              {title:"บัญชีไลน์", field:"LineId"},
+              {title:"สังกัด", field:"Biography"},
+              {title:"เลขที่บัญชี", field:"BankAccountId", editor:"input", cellEdited:function(cell) {
+                onEditTab(cell.getRow().getData(), 'NewContact', 'Phone', 'BankAccountId', cell.getValue());
+              }},
+              {title:"ชื่อธนาคาร", field:"BankName", editor:"select", editorParams:{"ธ.กรุงเทพ":"ธ.กรุงเทพ", "ธ.กสิกรไทย":"ธ.กสิกรไทย", "ธ.ไทยพาณิชย์":"ธ.ไทยพาณิชย์", "ธ.กรุงไทย":"ธ.กรุงไทย", "ธ.ทหารไทย":"ธ.ทหารไทย", "ธ.ออมสิน":"ธ.ออมสิน", "ธ.กรุงศรีอยุธยา":"ธ.กรุงศรีอยุธยา", "พร้อมเพย์":"พร้อมเพย์"}, cellEdited:function(cell) {
+                onEditTab(cell.getRow().getData(), 'NewContact', 'Phone', 'BankName', cell.getValue());
+              }},
+              {title:"รอบชำระ", field:"BillPeriod", editor:"select", editorParams:{"1":"1", "2":"2", "3":"3", "4":"4", "6":"6", "12":"12"}, cellEdited:function(cell) {
+                onEditTab(cell.getRow().getData(), 'NewContact', 'Phone', 'BillPeriod', cell.getValue());
+              }},
+              {title:"ภาพโปรไฟล์", field:"ImageProfile", editor:"input", cellEdited:function(cell) {
+                onEditTab(cell.getRow().getData(), 'NewContact', 'Phone', 'ImageProfile', cell.getValue());
+              }},
+              {title:"P", field:"Publisher", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+                onEditTab(cell.getRow().getData(), 'NewContact', 'Phone', 'Publisher', 1);
+              }},
+              {title:"D", field:"Developer", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+                onEditTab(cell.getRow().getData(), 'NewContact', 'Phone', 'Developer', 1);
+              }},
+            ],
+        });
+
+        // HR
+        panel.appendChild(document.createElement('hr'));
+
+        var pManual = document.createElement('p');
+        pManual.innerHTML = manUtils.getGlobalVars('loremLong');
+        panel.appendChild(pManual);
       }
 
       function showBooks(panel) {
@@ -1312,7 +1422,7 @@
               {title:"หนา", field:"Pages", editor:"input", cellEdited:function(cell) {
                 onEditBookSpec(cell.getRow().getData(), 'Pages', cell.getValue());
               }},
-              {title:"ขนาด", field:"Size", editor:"select", editorParams:{"B5":"B5", "A5":"A5", "A4":"A4", "Letter":"Letter", "Special":"Special"}, cellEdited:function(cell) {
+              {title:"ขนาด", field:"Size", editor:"select", editorParams:{"B5":"B5", "A5":"A5", "A4":"A4", "Letter":"Letter", "Cover":"Cover"}, cellEdited:function(cell) {
                 onEditBookSpec(cell.getRow().getData(), 'Size', cell.getValue());
               }},
               {title:"พิมพ์", field:"Printing", editor:"select", editorParams:{"ปกสี / เนื้อในสี":"ปกสี / เนื้อในสี", "ปกสี / เนื้อในขาวดำ":"ปกสี / เนื้อในขาวดำ", "ปกขาวดำ / เนื้อในขาวดำ":"ปกขาวดำ / เนื้อในขาวดำ"}, cellEdited:function(cell) {
@@ -1324,8 +1434,8 @@
               {title:"เข้าเล่ม", field:"Binding", editor:"select", editorParams:{"ไสกาว":"ไสกาว", "เย็บมุงหลังคา":"เย็บมุงหลังคา"}, cellEdited:function(cell) {
                 onEditBookSpec(cell.getRow().getData(), 'Binding', cell.getValue());
               }},
-              {title:"ปกหนังสือ", field:"Special", editor:"select", editorParams:{"ปกเคลือบด้าน":"ปกเคลือบด้าน", "ปกเคลือบมัน":"ปกเคลือบมัน", "ไม่เคลือบ":"ไม่เคลือบ"}, cellEdited:function(cell) {
-                onEditBookSpec(cell.getRow().getData(), 'Special', cell.getValue());
+              {title:"ปกหนังสือ", field:"Cover", editor:"select", editorParams:{"ปกเคลือบด้าน":"ปกเคลือบด้าน", "ปกเคลือบมัน":"ปกเคลือบมัน", "ไม่เคลือบ":"ไม่เคลือบ"}, cellEdited:function(cell) {
+                onEditBookSpec(cell.getRow().getData(), 'Cover', cell.getValue());
               }},
               {title:"ระบบพิมพ์", field:"Production", editor:"select", editorParams:{"Digital print":"Digital print", "Offset print":"Offset print"}, cellEdited:function(cell) {
                 onEditBookSpec(cell.getRow().getData(), 'Production', cell.getValue());
