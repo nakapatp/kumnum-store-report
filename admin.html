@@ -1351,6 +1351,13 @@
             maxHeight:450,
             data:arrProducts, //set initial table data
             columns:[
+              {title:"ใช้งาน", field:"Enable", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
+
+                  onEditBook(cell.getRow().getData(), 'Enable', (cell.getRow().getData().Highlight == 'True') ? 'False' : 'True');
+                }
+              }},
               {title:"ออกใหม่", field:"Highlight", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
