@@ -122,6 +122,7 @@
       var arrOrders = null;
       var arrSales = null;
       var arrNewContacts = null;
+      var arrNewProduct = null;
 
       var payingContact = null;
 
@@ -209,17 +210,28 @@
       }
 
       function loadProducts(iPanel) {
+
         // GET Author's Collections
         fetch(sheetURL + '/tabs/Products')
-        .then((response) => {
-            return response.json();
-        })
+        .then((response) => { return response.json(); })
         .then((myJson) => {
           arrProducts = myJson;
 
-          if (menuId == 'main-spec')
-            showBookSpec(iPanel);
-          else showBooks(iPanel);
+          if (menuId == 'main-spec') {
+
+            // GET New Product
+            fetch(sheetURL + '/tabs/NewProduct')
+            .then((response) => { return response.json(); })
+            .then((myJson) => {
+              arrNewProduct = myJson;
+
+              showBookSpec(iPanel);
+            })
+            .catch((error) => { console.log(error); });
+          }
+          else {
+            showBooks(iPanel);
+          }
         })
         .catch((error) => { console.log(error); });
       }
@@ -325,142 +337,9 @@
         .catch((error) => { console.log(error); });
       }
 
-      function onEditBook(obj, keyName, value) {
-        disableScreen();
-
-        var data = {};
-        data[keyName] = value;
-        fetch(sheetURL + '/tabs/Products/ProductId/*' + obj.ProductId + '*',
-          {
-            method: "PATCH",
-            mode: "cors",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          }
-        )
-        .then((response) => { return response.json(); })
-        .then((data) => {
-          window.location.href = "admin.html?id=main-book&key=" + key;
-        })
-        .catch((error) => { console.log(error); });
-      }
-
-      function onEditContact(obj, keyName, value) {
-        if (key == manUtils.getGlobalVars('keySuperAdmin')
-            || key == manUtils.getGlobalVars('keyPublisher')) {
-
-          //disableScreen();
-
-          var data = {};
-          data[keyName] = value;
-          fetch(sheetURL + '/tabs/Contacts/ContactId/*' + obj.ContactId + '*',
-            {
-              method: "PATCH",
-              mode: "cors",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(data),
-            }
-          )
-          .then((response) => { return response.json(); })
-          .then((data) => {
-            //window.location.href = "admin.html?id=main-book&key=" + key;
-          })
-          .catch((error) => { console.log(error); });
-        }
-      }
-
-      function swapContactNotified(contactId, value) {
-        disableScreen();
-
-        fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*',
-          {
-            method: "PATCH",
-            mode: "cors",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              Notified: String(value),
-            }),
-          }
-        )
-        .then((response) => { return response.json(); })
-        .then((data) => {
-          window.location.href = "admin.html?id=main-contact&key=" + key;
-        })
-        .catch((error) => { console.log(error); });
-      }
-
-      function swapOrderNotified(orderId, value) {
-        disableScreen();
-
-        fetch(sheetURL + '/tabs/Orders/OrderId/*' + orderId + '*',
-          {
-            method: "PATCH",
-            mode: "cors",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              Notified: String(value),
-            }),
-          }
-        )
-        .then((response) => { return response.json(); })
-        .then((data) => {
-          window.location.href = "admin.html?id=main-order&key=" + key;
-        })
-        .catch((error) => { console.log(error); });
-      }
-
-      function onInputTrackingId(orderId, value) {
-        fetch(sheetURL + '/tabs/Orders/OrderId/*' + orderId + '*',
-          {
-            method: "PATCH",
-            mode: "cors",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              TrackingCode: value,
-            }),
-          }
-        )
-        .then((response) => { return response.json(); })
-        .then((data) => {
-          //window.location.href = "admin.html?id=main-order&key=" + key;
-        })
-        .catch((error) => { console.log(error); });
-      }
-
-      function onSelectTransporter(orderId, value) {
-        fetch(sheetURL + '/tabs/Orders/OrderId/*' + orderId + '*',
-          {
-            method: "PATCH",
-            mode: "cors",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              Transporter: value,
-            }),
-          }
-        )
-        .then((response) => { return response.json(); })
-        .then((data) => {
-          //window.location.href = "admin.html?id=main-order&key=" + key;
-        })
-        .catch((error) => { console.log(error); });
-      }
-
       function onEditBookSpec(obj, keyName, value) {
         if (key == manUtils.getGlobalVars('keySuperAdmin')
-            || key == manUtils.getGlobalVars('keyPublisher')
-            || key == manUtils.getGlobalVars('keyAdmin')) {
+            || key == manUtils.getGlobalVars('keyPublisher')) {
 
           var price = obj.Price;
           var cost = obj.Cost;
@@ -1069,7 +948,7 @@
         if (key == manUtils.getGlobalVars('keySuperAdmin')
             || key == manUtils.getGlobalVars('keyPublisher')) {
 
-          pTableGuide.innerHTML += '<br><br>----- [เฉพาะฝ่ายการเงิน] -----';
+          pTableGuide.innerHTML += '<br><br>----- [เฉพาะฝ่ายจัดการ] -----';
           pTableGuide.innerHTML += '<br>ช่องที่แก้ไขได้: <span class="text-success">เลขที่บัญชี</span>, <span class="text-success">ช่องทาง</span>';
           pTableGuide.innerHTML += '<br>หากต้องการ <span class="text-danger">ยกเลิกรายการ</span> สามารถคลิ๊กที่ปุ่ม <i class="fa fa-trash"></i>&nbsp;&nbsp; จำนวนเงินของรายการนั้น ๆ จะกลายเป็น 0 และยอดบัญชีจะถูกปรับปรุงโดยอัตโนมัติ';
         }
@@ -1136,7 +1015,7 @@
             || key == manUtils.getGlobalVars('keyPublisher')) {
 
           var hCommand = document.createElement('h3');
-          hCommand.innerHTML = 'เพิ่มรายการบัญชี <span class="badge badge-danger">ฝ่ายการเงิน</span>';
+          hCommand.innerHTML = 'เพิ่มรายการบัญชี <span class="badge badge-danger">ฝ่ายจัดการ</span>';
           panel.appendChild(hCommand);
 
           var cmdDiv = document.createElement('div');
@@ -1277,7 +1156,7 @@
             || key == manUtils.getGlobalVars('keyPublisher')
             || key == manUtils.getGlobalVars('keyAdmin')) {
 
-          pTableGuide.innerHTML = '<br>----- [เฉพาะฝ่ายการเงิน] -----';
+          pTableGuide.innerHTML = '<br>----- [เฉพาะฝ่ายจัดการ] -----';
           pTableGuide.innerHTML += '<br>ช่องที่แก้ไขได้: <span class="text-success">เลขที่บัญชี</span>, <span class="text-success">ช่องทาง</span>';
 
           var desc = 'หากต้องการ <span class="text-primary">ส่งอีเมลแจ้งสรุปข้อมูลของผู้เขียน</span> สามารถคลิ๊กที่ปุ่ม&nbsp;&nbsp;<span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ให้กลายเป็น <span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;จากนั้นระบบจะส่งอีเมลแจ้งอัตโนมัติภายใน 15 นาที';
@@ -1333,7 +1212,7 @@
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  swapContactNotified(cell.getRow().getData().ContactId, (cell.getRow().getData().Notified == 1) ? 0 : 1);
+                  onEditSheet(cell.getRow().getData(), 'Contacts', 'ContactId', {Notified: (cell.getRow().getData().Notified == 1 ? "0" : 1),}, true, 'main-contact');
                 }
               }},
               {formatter:profileIcon, hozAlign:"center", cellClick:function(e, cell){
@@ -1379,14 +1258,14 @@
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  onEditContact(cell.getRow().getData(), 'BankAccountId', cell.getValue());
+                  onEditSheet(cell.getRow().getData(), 'Contacts', 'ContactId', {BankAccountId:cell.getValue()} );
                 }
               }},
               {title:"ธนาคาร", field:"BankName", editor:"select", editorParams:{"ธ.กรุงเทพ":"ธ.กรุงเทพ", "ธ.กสิกรไทย":"ธ.กสิกรไทย", "ธ.ไทยพาณิชย์":"ธ.ไทยพาณิชย์", "ธ.กรุงไทย":"ธ.กรุงไทย", "ธ.ทหารไทย":"ธ.ทหารไทย", "ธ.ออมสิน":"ธ.ออมสิน", "ธ.กรุงศรีอยุธยา":"ธ.กรุงศรีอยุธยา", "พร้อมเพย์":"พร้อมเพย์"}, cellEdited:function(cell) {
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  onEditContact(cell.getRow().getData(), 'BankName', cell.getValue());
+                  onEditSheet(cell.getRow().getData(), 'Contacts', 'ContactId', {BankName:cell.getValue()} );
                 }
               }},
             ],
@@ -1410,7 +1289,7 @@
             || key == manUtils.getGlobalVars('keyPublisher')
             || key == manUtils.getGlobalVars('keyAdmin')) {
 
-          pTableNewContact.innerHTML = '----- [เฉพาะฝ่ายการเงิน] -----';
+          pTableNewContact.innerHTML = '----- [เฉพาะฝ่ายจัดการ] -----';
           pTableNewContact.innerHTML += '<br>ช่องที่แก้ไขได้: <span class="text-success">เลขที่บัญชี</span>, <span class="text-success">ช่องทาง</span>, <span class="text-success">รอบชำระ</span>, <span class="text-success">ภาพโปรไฟล์</span>,';
 
           var desc = '<ol>';
@@ -1509,49 +1388,47 @@
         document.getElementById('panel-header').innerHTML = 'หนังสือ (' + arrProducts.length + ')';
         //document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('loremShort');
 
-        if (key == manUtils.getGlobalVars('keySuperAdmin')
-            || key == manUtils.getGlobalVars('keyPublisher')) {
+        var desc = '';
+        desc += '----- [เฉพาะฝ่ายจัดการ] -----<br><br>';
+        desc += 'ใช้งาน<ul>';
+        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;เปิดใช้งานอยู่ในระบบ</li>';
+        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ปิดใช้งานแล้ว</li>';
+        desc += '</ul>';
+        desc += 'ออกใหม่<ul>';
+        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;ปรากฏอยู่ในหน้าแรกใต้หัวข้อ "หนังสือออกใหม่"</li>';
+        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ไม่ปรากฏในหน้าแรก</li>';
+        desc += '<li>จำนวนรวมของ "หนังสือออกใหม่" ต้องหาร 4 ลงตัว ได้แก่ 4,8,12,...</li>';
+        desc += '</ul>';
+        desc += 'ขายดี<ul>';
+        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;ปรากฏอยู่ในหน้าแรกใต้หัวข้อ "หนังสือขายดี"</li>';
+        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ไม่ปรากฏในหน้าแรก</li>';
+        desc += '<li>จำนวนรวมของ "หนังสือขายดี" ต้องหาร 4 ลงตัว ได้แก่ 4,8,12,...</li>';
+        desc += '</ul>';
+        desc += 'ซื้อได้<ul>';
+        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;แสดงหน้าปก และเปิดจำหน่าย</li>';
+        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;แสดงหน้าปก แต่งดจำหน่าย</li>';
+        desc += '</ul>';
+        desc += 'ขายเฉพาะบุคคล<ul>';
+        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;ขายเฉพาะบุคคล</li>';
+        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ขายแบบสาธารณะ</li>';
+        desc += '</ul>';
 
-          //pTableGuide.innerHTML = '<br>----- [เฉพาะฝ่ายการเงิน] -----';
-          //pTableGuide.innerHTML += '<br>ช่องที่แก้ไขได้: <span class="text-success">เลขที่บัญชี</span>, <span class="text-success">ช่องทาง</span>';
+        var accordian = document.createElement('div');
+        accordian.className = 'accordian';
+        accordian.id = 'accordionContact';
+        var data = {
+          AccordianName: 'accordionContact',
+          Name: 'collapseOne',
+          Head: 'headingOne',
+          Title: 'การตั้งค่าหนังสือ',
+          Description: desc,
+          Icon: 'fa-lightbulb',
+          Show: '',
+        };
+        spawnAccordian(accordian, data);
 
-          var desc = '';
-          desc += 'ใช้งาน<ul>';
-          desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;เปิดใช้งานอยู่ในระบบ</li>';
-          desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ปิดใช้งานแล้ว</li>';
-          desc += '</ul>';
-          desc += 'ออกใหม่<ul>';
-          desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;ปรากฏอยู่ในหน้าแรกใต้หัวข้อ "หนังสือออกใหม่"</li>';
-          desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ไม่ปรากฏในหน้าแรก</li>';
-          desc += '</ul>';
-          desc += 'ขายดี<ul>';
-          desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;ปรากฏอยู่ในหน้าแรกใต้หัวข้อ "หนังสือขายดี"</li>';
-          desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ไม่ปรากฏในหน้าแรก</li>';
-          desc += '</ul>';
-          desc += 'ซื้อได้<ul>';
-          desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;แสดงหน้าปก และเปิดจำหน่าย</li>';
-          desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;แสดงหน้าปก แต่งดจำหน่าย</li>';
-          desc += '</ul>';
-          desc += 'ขายเฉพาะบุคคล<ul>';
-          desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;ขายเฉพาะบุคคล</li>';
-          desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ขายแบบสาธารณะ</li>';
-          desc += '</ul>';
-
-          var accordian = document.createElement('div');
-          accordian.className = 'accordian';
-          accordian.id = 'accordionContact';
-          var data = {
-            AccordianName: 'accordionContact',
-            Name: 'collapseOne',
-            Head: 'headingOne',
-            Title: 'การตั้งค่าหนังสือ',
-            Description: desc,
-            Icon: 'fa-lightbulb',
-            Show: '',
-          };
-          spawnAccordian(accordian, data);
-        }
         panel.appendChild(accordian);
+
 
         panel.appendChild(document.createElement('hr'));
 
@@ -1567,21 +1444,21 @@
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  onEditBook(cell.getRow().getData(), 'Enable', (cell.getRow().getData().Highlight == 'True') ? 'False' : 'True');
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Enable: ((cell.getRow().getData().Enable == 'True') ? 'False' : 'True'),}, true, 'main-book');
                 }
               }},
               {title:"ออกใหม่", field:"Highlight", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  onEditBook(cell.getRow().getData(), 'Highlight', (cell.getRow().getData().Highlight == 'True') ? 'False' : 'True');
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Highlight: ((cell.getRow().getData().Highlight == 'True') ? 'False' : 'True'),}, true, 'main-book');
                 }
               }},
               {title:"ขายดี", field:"BestSeller", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  onEditBook(cell.getRow().getData(), 'BestSeller', (cell.getRow().getData().BestSeller == 'True') ? 'False' : 'True');
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {BestSeller: ((cell.getRow().getData().BestSeller == 'True') ? 'False' : 'True'),}, true, 'main-book');
                 }
               }},
               {formatter:bookIcon, hozAlign:"center", cellClick:function(e, cell){
@@ -1594,14 +1471,14 @@
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  onEditBook(cell.getRow().getData(), 'Available', (cell.getRow().getData().Available == 'True') ? 'False' : 'True');
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Available: ((cell.getRow().getData().Available == 'True') ? 'False' : 'True'),}, true, 'main-book');
                 }
               }},
               {title:"เฉพาะบุคคล", field:"PrivateSale", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  onEditBook(cell.getRow().getData(), 'PrivateSale', (cell.getRow().getData().PrivateSale == 'True') ? 'False' : 'True');
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {PrivateSale: ((cell.getRow().getData().PrivateSale == 'True') ? 'False' : 'True'),}, true, 'main-book');
                 }
               }},
             ],
@@ -1612,6 +1489,7 @@
       }
 
       function showBookSpec(panel) {
+
         document.getElementById('panel-header').innerHTML = 'สเปคหนังสือ';
         document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('loremShort');
 
@@ -1619,11 +1497,20 @@
         deck.className = 'card-deck mb-3 text-center';
         panel.appendChild(deck);
 
+        var numOfEnable = 0;
+        var numOfDisable = 0;
+
+        for (var i in arrProducts) {
+          if (arrProducts[i].Enable == 'False')
+            numOfDisable++;
+          else numOfEnable++;
+        }
+
         // Due Payment
         var data = {
           ElementID: 'book-new',
-          Title: 'หนังสือใหม่รอจัดการ',
-          Value: manUtils.formatNumber(0, 0),
+          Title: 'หนังสือรอเปิดใช้งาน',
+          Value: manUtils.formatNumber(numOfDisable, 0),
           Unit: 'เล่ม',
           TextColor: 'white',
           Color: 'danger',
@@ -1634,8 +1521,8 @@
         // Application Approve
         var data = {
           ElementID: 'book-await',
-          Title: 'อนุมัติแล้วรอขึ้นระบบ',
-          Value: manUtils.formatNumber(0, 0),
+          Title: 'หนังสือใหม่รอเข้าระบบ',
+          Value: manUtils.formatNumber(arrNewProduct.length, 0),
           Unit: 'เล่ม',
           TextColor: 'white',
           Color: 'primary',
@@ -1646,8 +1533,8 @@
         // Number of Contacts
         var data = {
           ElementID: 'book-active',
-          Title: 'เปิดใช้งานอยู่',
-          Value: manUtils.formatNumber(0, 0),
+          Title: 'หนังสือเปิดใช้งานอยู่',
+          Value: manUtils.formatNumber(numOfEnable, 0),
           Unit: 'เล่ม',
           TextColor: 'white',
           Color: 'success',
@@ -1659,13 +1546,18 @@
         //panel.appendChild(document.createElement('hr'));
 
         var hTableSpec = document.createElement('h3');
-        hTableSpec.innerHTML = 'รายการหนังสือเปิดใช้งานอยู่ (' + arrProducts.length + ')';;
+        hTableSpec.innerHTML = 'รายการหนังสือ (' + arrProducts.length + ')';;
         panel.appendChild(hTableSpec);
 
         var guide = document.createElement('p');
         panel.appendChild(guide);
 
-        guide.innerHTML = '----- [เฉพาะฝ่ายการเงิน, แอดมิน] -----';
+        guide.innerHTML = '----- [เฉพาะฝ่ายจัดการ] -----';
+        guide.innerHTML += '<br>ช่องที่แก้ไขได้: <span class="text-success">ใช้งาน</span>,';
+        guide.innerHTML += ' <span class="text-success">ราคา</span>,';
+        guide.innerHTML += ' <span class="text-success">ค่าผลิต</span>';
+
+        guide.innerHTML += '<br>----- [เฉพาะฝ่ายจัดการ, แอดมิน] -----';
         guide.innerHTML += '<br>ช่องที่แก้ไขได้: <span class="text-success">ความหนา</span>,';
         guide.innerHTML += ' <span class="text-success">ขนาด</span>,';
         guide.innerHTML += ' <span class="text-success">การพิมพ์</span>,';
@@ -1673,8 +1565,6 @@
         guide.innerHTML += ' <span class="text-success">เข้าเล่ม</span>,';
         guide.innerHTML += ' <span class="text-success">ปกหนังสือ</span>,';
         guide.innerHTML += ' <span class="text-success">ระบบพิมพ์</span>,';
-        guide.innerHTML += ' <span class="text-success">ราคา</span>,';
-        guide.innerHTML += ' <span class="text-success">ค่าผลิต</span>';
 
         var table = document.createElement('div');
         table.id = 'tabulator-books';
@@ -1684,45 +1574,78 @@
             maxHeight:450,
             data:arrProducts, //set initial table data
             columns:[
-              /*
-              {field:"Enable", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+              //{formatter:bookIcon, frozen:true, hozAlign:"center", cellClick:function(e, cell){
+              //  window.open(manUtils.getGlobalVars('shopURL') + '?id=' + cell.getRow().getData().ContactId + '&book=' + cell.getRow().getData().ProductId);
+              //}},
+              {title:"ใช้งาน", field:"Enable", hozAlign:"center", formatter:"tickCross", frozen:true, cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  onEditBookSpec(cell.getRow().getData(), 'Enable', (cell.getRow().getData().Enable == 'True') ? 'False' : 'True');
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Enable: ((cell.getRow().getData().Enable == 'True') ? 'False' : 'True'),}, true, 'main-spec');
                 }
-              }},
-              */
-              {formatter:bookIcon, frozen:true, hozAlign:"center", cellClick:function(e, cell){
-                window.open(manUtils.getGlobalVars('shopURL') + '?id=' + cell.getRow().getData().ContactId + '&book=' + cell.getRow().getData().ProductId);
               }},
               {title:"ชื่อหนังสือ", width:280, field:"Title", frozen:true},
               {title:"ผู้เขียน", width:180, field:"Author"},
               {title:"หนา", field:"Pages", editor:"input", cellEdited:function(cell) {
-                onEditBookSpec(cell.getRow().getData(), 'Pages', cell.getValue());
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Pages: cell.getValue(),});
+                }
               }},
               {title:"ขนาด", field:"Size", editor:"select", editorParams:{"B5":"B5", "A5":"A5", "A4":"A4", "Letter":"Letter", "Cover":"Cover"}, cellEdited:function(cell) {
-                onEditBookSpec(cell.getRow().getData(), 'Size', cell.getValue());
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Size: cell.getValue(),});
+                }
               }},
               {title:"พิมพ์", field:"Printing", editor:"select", editorParams:{"ปกสี / เนื้อในสี":"ปกสี / เนื้อในสี", "ปกสี / เนื้อในขาวดำ":"ปกสี / เนื้อในขาวดำ", "ปกขาวดำ / เนื้อในขาวดำ":"ปกขาวดำ / เนื้อในขาวดำ"}, cellEdited:function(cell) {
-                onEditBookSpec(cell.getRow().getData(), 'Printing', cell.getValue());
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Printing: cell.getValue(),});
+                }
               }},
               {title:"กระดาษ", field:"Paper", editor:"select", editorParams:{"อาร์ต 260 แกรม / ปอนด์ 70 แกรม":"อาร์ต 260 แกรม / ปอนด์ 70 แกรม", "อาร์ต 260 แกรม / ถนอมสายตา 75 แกรม":"อาร์ต 260 แกรม / ถนอมสายตา 75 แกรม"}, cellEdited:function(cell) {
-                onEditBookSpec(cell.getRow().getData(), 'Paper', cell.getValue());
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Paper: cell.getValue(),});
+                }
               }},
               {title:"เข้าเล่ม", field:"Binding", editor:"select", editorParams:{"ไสกาว":"ไสกาว", "เย็บมุงหลังคา":"เย็บมุงหลังคา"}, cellEdited:function(cell) {
-                onEditBookSpec(cell.getRow().getData(), 'Binding', cell.getValue());
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Binding: cell.getValue(),});
+                }
               }},
-              {title:"ปกหนังสือ", field:"Cover", editor:"select", editorParams:{"ปกเคลือบด้าน":"ปกเคลือบด้าน", "ปกเคลือบมัน":"ปกเคลือบมัน", "ไม่เคลือบ":"ไม่เคลือบ"}, cellEdited:function(cell) {
-                onEditBookSpec(cell.getRow().getData(), 'Cover', cell.getValue());
+              {title:"ปก", field:"Cover", editor:"select", editorParams:{"ปกเคลือบด้าน":"ปกเคลือบด้าน", "ปกเคลือบมัน":"ปกเคลือบมัน", "ไม่เคลือบ":"ไม่เคลือบ"}, cellEdited:function(cell) {
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Cover: cell.getValue(),});
+                }
               }},
               {title:"ระบบพิมพ์", field:"Production", editor:"select", editorParams:{"Digital print":"Digital print", "Offset print":"Offset print"}, cellEdited:function(cell) {
-                onEditBookSpec(cell.getRow().getData(), 'Production', cell.getValue());
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Production: cell.getValue(),});
+                }
               }},
               {title:"ราคา", field:"Price", editor:"input", cellEdited:function(cell) {
                 onEditBookSpec(cell.getRow().getData(), 'Price', cell.getValue());
               }},
-              {title:"ค่าผลิต", field:"Cost", editor:"input", cellEdited:function(cell) {
+              {title:"ค่าผลิต", field:"Cost", width:80, editor:"input", cellEdited:function(cell) {
                 onEditBookSpec(cell.getRow().getData(), 'Cost', cell.getValue());
               }},
             ],
@@ -1732,10 +1655,48 @@
         panel.appendChild(document.createElement('hr'));
 
         var hTableNewProduct = document.createElement('h3');
-        hTableNewProduct.innerHTML = 'หนังสือใหม่รอจัดการ';
+        hTableNewProduct.innerHTML = 'หนังสือใหม่รอเข้าระบบ (' + arrNewProduct.length + ')';
         panel.appendChild(hTableNewProduct);
 
-        var desc = manUtils.getGlobalVars('loremLong');
+        var tableNewProduct = document.createElement('div');
+        tableNewProduct.id = 'tabulator-new-product';
+        panel.appendChild(tableNewProduct);
+
+        var tableNew = new Tabulator("#tabulator-new-product", {
+            maxHeight:450,
+            data:arrNewProduct, //set initial table data
+            columns:[
+              {title:"ผู้เขียน", field:"Author", width:180, frozen:true},
+              {title:"ชื่อหนังสือ", field:"Title", width:280, frozen:true},
+              {title:"คำอธิบายเอกสาร", field:"Brief", width:180},
+              {title:"รายละเอียด", field:"Description", width:280},
+              {title:"ภาพหน้าปก", field:"ImageFull", width:180},
+              {title:"หนา", field:"Pages"},
+              {title:"ขนาด", field:"Size"},
+              {title:"พิมพ์", field:"Printing"},
+              {title:"กระดาษ", field:"Paper"},
+              {title:"เข้าเล่ม", field:"Binding"},
+              {title:"ปก", field:"Cover"},
+              {title:"ระบบพิมพ์", field:"Production"},
+              {title:"ราคา", field:"Price"},
+              {title:"ค่าผลิต", field:"Cost", width:80},
+              {title:"เปิดขาย", field:"Available"},
+              {title:"เฉพาะบุคคล", field:"PrivateSale"},
+            ],
+        });
+
+        var desc = '<ol>';
+        desc += '<li>ส่งลิงก์ <a href="' + manUtils.getGlobalVars('newProductURL') + '">' + manUtils.getGlobalVars('newProductURL') + '</a> เพื่อกรอกข้อมูลหนังสือเบื้องต้น</li>';
+        desc += '<li>ข้อมูลเบื้องต้นดังกล่าวจะปรากฏขึ้นใน <span class="text-primary">หนังสือใหม่รอเข้าระบบ</span></li>';
+        desc += '<li>รอจนกว่าผู้ดูแลระบบจะเข้ามาตรวจสอบ และนำข้อมูลเข้าสู่ระบบ</li>';
+        desc += '<li>ข้อมูลหนังสือใหม่จะถูกย้ายไปที่ <span class="text-primary">รายการหนังสือ</span> โดยมีค่าการเปิดใช้งานเป็น <span class="text-danger"><i class="fa fa-times"></i></span> </li>';
+        desc += '<li>เมื่อจัดการข้อมูลต่าง ๆ เรียบร้อยแล้วก็สามารถ เปิดใช้งานเป็น <span class="text-success"><i class="fa fa-check"></i></span> ได้ทุกเมื่อ</li>';
+        desc += '<li>-- จบ --</li>'
+        desc += '</ol>';
+
+        // HR
+        panel.appendChild(document.createElement('hr'));
+
         var accordian = document.createElement('div');
         accordian.className = 'accordian';
         accordian.id = 'accordionProduct';
@@ -1869,23 +1830,25 @@
               {formatter:specIcon, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('specURL') + '?id=' + cell.getRow().getData().OrderId);
               }},
-              {title:"เลขที่พัสดุ", width:100, field:"TrackingCode", editor:"input", cellEdited:function(cell){
-                if (key == manUtils.getGlobalVars('keySuperAdmin')
-                    || key == manUtils.getGlobalVars('keyPublisher')
-                    || key == manUtils.getGlobalVars('keyAdmin')) {
-
-                  if (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
-                    onInputTrackingId(cell.getRow().getData().OrderId, cell.getValue());
-                  //else window.location.href = "admin.html?id=main-order&key=" + key;
-                }
-              }},
               {title:"ขนส่ง", width:80, field:"Transporter", editor:"select", editorParams:{"Flash":"Flash", "J&T":"J&T", "Kerry":"Kerry", "ThaiPost":"ThaiPost"}, cellEdited:function(cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')
                     || key == manUtils.getGlobalVars('keyAdmin')) {
 
                   if (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
-                    onSelectTransporter(cell.getRow().getData().OrderId, cell.getValue());
+                    onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {Transporter: cell.getValue(),});
+                    //onSelectTransporter(cell.getRow().getData().OrderId, cell.getValue());
+                }
+              }},
+              {title:"เลขที่พัสดุ", width:100, field:"TrackingCode", editor:"input", cellEdited:function(cell){
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  if (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
+                    onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {TrackingCode: cell.getValue(),});
+                    //onInputTrackingId(cell.getRow().getData().OrderId, cell.getValue());
+                  //else window.location.href = "admin.html?id=main-order&key=" + key;
                 }
               }},
               {formatter:trackingIcon, hozAlign:"center", cellClick:function(e, cell){
@@ -1901,9 +1864,11 @@
               }},
               {title:"แจ้ง", field:"Notified", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
-                    || key == manUtils.getGlobalVars('keyPublisher')) {
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
 
-                  swapOrderNotified(cell.getRow().getData().OrderId, (cell.getRow().getData().Notified == 1) ? 0 : 1);
+                  onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {Notified: (cell.getRow().getData().Notified == 1) ? "0" : 1,}, true, 'main-order');
+                  //swapOrderNotified(cell.getRow().getData().OrderId, (cell.getRow().getData().Notified == 1) ? "0" : 1);
                 }
               }},
             ],
@@ -1953,7 +1918,7 @@
         if (key == manUtils.getGlobalVars('keySuperAdmin')
             || key == manUtils.getGlobalVars('keyPublisher')
             || key == manUtils.getGlobalVars('keyViewer')) {
-          menuItems.push({icon: 'fa-money', caption: 'การเงิน <span class="badge badge-danger">ฝ่ายการเงิน</span>', name: 'main-dashboard', href: 'admin.html?id=main-dashboard&key=' + key});
+          menuItems.push({icon: 'fa-money', caption: 'การเงิน <span class="badge badge-danger">ฝ่ายจัดการ</span>', name: 'main-dashboard', href: 'admin.html?id=main-dashboard&key=' + key});
         }
 
         menuItems.push({icon: 'fa-user', caption: 'ผู้เขียน', name: 'main-contact', href: 'admin.html?id=main-contact&key=' + key});
