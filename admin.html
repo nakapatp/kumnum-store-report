@@ -849,7 +849,7 @@
         spawnCard(deck, data);
 
         var pShare = document.createElement('p');
-        pShare.innerHTML = '<h3>รายจ่าย</h3><p>รายจ่ายของแพลตฟอร์มมี 6 ทาง ได้แก่ ส่วนแบ่งสำนักพิมพ์, ค่าลิขสิทธิ์, ส่วนแบ่งแฟลตฟอร์ม, ค่าผลิต, ค่าจัดส่ง และค่าใช้จ่ายอื่น ๆ</p>';
+        pShare.innerHTML = '<h3>รายจ่าย</h3><p>รายจ่ายของแพลตฟอร์มมี 6 ทาง</p>';
         panel.appendChild(pShare);
 
         var deckShare = document.createElement('div');
@@ -926,7 +926,7 @@
         // Expense Other
         var data = {
           ElementID: 'expense-others',
-          Title: 'ค่าใช้จ่ายสะสม  <sup>8</sup>',
+          Title: 'ค่าใช้จ่ายอื่น ๆ สะสม  <sup>8</sup>',
           Value: manUtils.formatNumber(collectiveMiscCost, 0),
           Unit: 'บาท',
           TextColor: 'black',
@@ -949,7 +949,7 @@
             || key == manUtils.getGlobalVars('keyPublisher')) {
 
           pTableGuide.innerHTML += '<br><br>----- [เฉพาะฝ่ายจัดการ] -----';
-          pTableGuide.innerHTML += '<br>ช่องที่แก้ไขได้: <span class="text-success">เลขที่บัญชี</span>, <span class="text-success">ช่องทาง</span>';
+          pTableGuide.innerHTML += '<br>ช่องที่แก้ไขได้: <span class="text-success">เลขที่บัญชี</span>, <span class="text-success">ธนาคาร</span>';
           pTableGuide.innerHTML += '<br>หากต้องการ <span class="text-danger">ยกเลิกรายการ</span> สามารถคลิ๊กที่ปุ่ม <i class="fa fa-trash"></i>&nbsp;&nbsp; จำนวนเงินของรายการนั้น ๆ จะกลายเป็น 0 และยอดบัญชีจะถูกปรับปรุงโดยอัตโนมัติ';
         }
         panel.appendChild(pTableGuide);
@@ -981,7 +981,7 @@
                   onEditSheet(cell.getRow().getData(), 'Payments', 'ID', {BankAccountId:cell.getValue(),});
                 }
               }},
-              {title:"ช่องทาง", width:100, field:"BankName", editor:"select", editorParams:{"ธ.กรุงเทพ":"ธ.กรุงเทพ", "ธ.กสิกรไทย":"ธ.กสิกรไทย", "ธ.ไทยพาณิชย์":"ธ.ไทยพาณิชย์", "ธ.กรุงไทย":"ธ.กรุงไทย", "ธ.ทหารไทย":"ธ.ทหารไทย", "ธ.ออมสิน":"ธ.ออมสิน", "ธ.กรุงศรีอยุธยา":"ธ.กรุงศรีอยุธยา", "พร้อมเพย์":"พร้อมเพย์"}, cellEdited:function(cell){
+              {title:"ธนาคาร", width:100, field:"BankName", editor:"select", editorParams:{"ธ.กรุงเทพ":"ธ.กรุงเทพ", "ธ.กสิกรไทย":"ธ.กสิกรไทย", "ธ.ไทยพาณิชย์":"ธ.ไทยพาณิชย์", "ธ.กรุงไทย":"ธ.กรุงไทย", "ธ.ทหารไทย":"ธ.ทหารไทย", "ธ.ออมสิน":"ธ.ออมสิน", "ธ.กรุงศรีอยุธยา":"ธ.กรุงศรีอยุธยา", "พร้อมเพย์":"พร้อมเพย์"}, cellEdited:function(cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
@@ -1025,23 +1025,24 @@
 
           html += '<div class="col-md-4">';
             html += '<div class="input-group">';
-              html += '<input type="input" class="form-control" id="income-interest" placeholder="ระบุจำนวน">';
-              html += '<div class="input-group-append"><button class="btn btn-outline-secondary" onclick="onClickIncome(this)" data-name="income-interest" data-content="ดอกเบี้ย">(รับ) ดอกเบี้ย</button></div>';
-            html += '</div>';
-          html += '</div>';
-
-          html += '<div class="col-md-4">';
-            html += '<div class="input-group">';
               html += '<input type="input" class="form-control" id="outcome-publisher" placeholder="ระบุจำนวน">';
               html += '<div class="input-group-append"><button class="btn btn-primary" onclick="onClickOutcome(this)" data-name="outcome-publisher" data-content="ส่วนแบ่งสำนักพิมพ์">(จ่าย) ส่วนแบ่งสำนักพิมพ์</button></div>';
+              html += '<div style="margin-left:5px; margin-top:5px;">' + manUtils.getGlobalVars('publisherBankAccountId') + ' ' + manUtils.getGlobalVars('publisherBankAccountName') + '</div>';
             html += '</div>';
           html += '</div>';
 
           html += '<div class="col-md-4">';
             html += '<div class="input-group">';
               html += '<input type="input" class="form-control" id="outcome-platform" placeholder="ระบุจำนวน">';
-              html += '<div class="input-group-append"><button class="btn btn-dark" onclick="onClickOutcome(this)" data-name="outcome-platform" data-content="ส่วนแบ่งแพลตฟอร์ม">(จ่าย) ส่วนแบ่งแพลตฟอร์ม</button></div>';
+              html += '<div class="input-group-append"><button class="btn btn-primary" onclick="onClickOutcome(this)" data-name="outcome-platform" data-content="ส่วนแบ่งแพลตฟอร์ม">(จ่าย) ส่วนแบ่งแพลตฟอร์ม</button></div>';
               html += '<div style="margin-left:5px; margin-top:5px;">' + manUtils.getGlobalVars('platformBankAccountId') + ' ' + manUtils.getGlobalVars('platformBankAccountName') + '</div>';
+            html += '</div>';
+          html += '</div>';
+
+          html += '<div class="col-md-4">';
+            html += '<div class="input-group">';
+              html += '<input type="input" class="form-control" id="outcome-misc" placeholder="ระบุจำนวน">';
+              html += '<div class="input-group-append"><button class="btn btn-outline-secondary" onclick="onClickOutcome(this)" data-name="outcome-misc" data-content="ค่าใช้จ่าย">ค่าใช้จ่าย</button></div>';
             html += '</div>';
           html += '</div>';
 
@@ -1056,7 +1057,7 @@
           html += '<div class="col-md-4">';
             html += '<div class="input-group">';
               html += '<input type="input" class="form-control" id="outcome-production" placeholder="ระบุจำนวน">';
-              html += '<div class="input-group-append"><button class="btn btn-primary" onclick="onClickOutcome(this)" data-name="outcome-production" data-content="ค่าผลิต">(จ่าย) ค่าผลิต</button></div>';
+              html += '<div class="input-group-append"><button class="btn btn-info" onclick="onClickOutcome(this)" data-name="outcome-production" data-content="ค่าผลิต">(จ่าย) ค่าผลิต</button></div>';
             html += '</div>';
           html += '</div>';
 
@@ -1069,8 +1070,8 @@
 
           html += '<div class="col-md-4">';
             html += '<div class="input-group">';
-              html += '<input type="input" class="form-control" id="outcome-misc" placeholder="ระบุจำนวน">';
-              html += '<div class="input-group-append"><button class="btn btn-outline-secondary" onclick="onClickOutcome(this)" data-name="outcome-misc" data-content="ค่าใช้จ่าย">ค่าใช้จ่าย</button></div>';
+              html += '<input type="input" class="form-control" id="income-interest" placeholder="ระบุจำนวน">';
+              html += '<div class="input-group-append"><button class="btn btn-outline-secondary" onclick="onClickIncome(this)" data-name="income-interest" data-content="ดอกเบี้ย">(รับ) ดอกเบี้ย</button></div>';
             html += '</div>';
           html += '</div>';
 
@@ -1157,7 +1158,7 @@
             || key == manUtils.getGlobalVars('keyAdmin')) {
 
           pTableGuide.innerHTML = '<br>----- [เฉพาะฝ่ายจัดการ] -----';
-          pTableGuide.innerHTML += '<br>ช่องที่แก้ไขได้: <span class="text-success">เลขที่บัญชี</span>, <span class="text-success">ช่องทาง</span>';
+          pTableGuide.innerHTML += '<br>ช่องที่แก้ไขได้: <span class="text-success">เลขที่บัญชี</span>, <span class="text-success">ธนาคาร</span>';
 
           var desc = 'หากต้องการ <span class="text-primary">ส่งอีเมลแจ้งสรุปข้อมูลของผู้เขียน</span> สามารถคลิ๊กที่ปุ่ม&nbsp;&nbsp;<span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ให้กลายเป็น <span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;จากนั้นระบบจะส่งอีเมลแจ้งอัตโนมัติภายใน 15 นาที';
           desc += '<br>หากต้องการ <span class="text-primary">ส่งอีเมลแจ้งซ้ำ</span> ต้องคลิ๊กที่ปุ่ม&nbsp;&nbsp;<span class="text-success"><i class="fa fa-check"></i></span> เพื่อเปลี่ยนเป็น&nbsp;&nbsp;<span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;เสียก่อน';
@@ -1290,7 +1291,7 @@
             || key == manUtils.getGlobalVars('keyAdmin')) {
 
           pTableNewContact.innerHTML = '----- [เฉพาะฝ่ายจัดการ] -----';
-          pTableNewContact.innerHTML += '<br>ช่องที่แก้ไขได้: <span class="text-success">เลขที่บัญชี</span>, <span class="text-success">ช่องทาง</span>, <span class="text-success">รอบชำระ</span>, <span class="text-success">ภาพโปรไฟล์</span>,';
+          pTableNewContact.innerHTML += '<br>ช่องที่แก้ไขได้: <span class="text-success">เลขที่บัญชี</span>, <span class="text-success">ธนาคาร</span>, <span class="text-success">รอบชำระ</span>, <span class="text-success">ภาพโปรไฟล์</span>,';
 
           var desc = '<ol>';
           desc += '<li>ส่งลิงก์ใบสมัคร <a href="' + manUtils.getGlobalVars('newContactURL') + '">' + manUtils.getGlobalVars('newContactURL') + '</a> ให้ผู้สนใจกรอกข้อมูลเบื้องต้น</li>';
@@ -1338,7 +1339,7 @@
                       onEditSheet(cell.getRow().getData(), 'NewContact', 'Phone', {BankAccountId:cell.getValue()} );
                 }
               }},
-              {title:"ช่องทาง", field:"BankName", editor:"select", editorParams:{"ธ.กรุงเทพ":"ธ.กรุงเทพ", "ธ.กสิกรไทย":"ธ.กสิกรไทย", "ธ.ไทยพาณิชย์":"ธ.ไทยพาณิชย์", "ธ.กรุงไทย":"ธ.กรุงไทย", "ธ.ทหารไทย":"ธ.ทหารไทย", "ธ.ออมสิน":"ธ.ออมสิน", "ธ.กรุงศรีอยุธยา":"ธ.กรุงศรีอยุธยา", "พร้อมเพย์":"พร้อมเพย์"}, cellEdited:function(cell) {
+              {title:"ธนาคาร", field:"BankName", editor:"select", editorParams:{"ธ.กรุงเทพ":"ธ.กรุงเทพ", "ธ.กสิกรไทย":"ธ.กสิกรไทย", "ธ.ไทยพาณิชย์":"ธ.ไทยพาณิชย์", "ธ.กรุงไทย":"ธ.กรุงไทย", "ธ.ทหารไทย":"ธ.ทหารไทย", "ธ.ออมสิน":"ธ.ออมสิน", "ธ.กรุงศรีอยุธยา":"ธ.กรุงศรีอยุธยา", "พร้อมเพย์":"พร้อมเพย์"}, cellEdited:function(cell) {
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
                       onEditSheet(cell.getRow().getData(), 'NewContact', 'Phone', {BankName:cell.getValue()} );
