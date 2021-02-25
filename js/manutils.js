@@ -81,6 +81,15 @@ var manUtils = (function() {
 
     return alphabet[Math.floor(Math.random() * alphabet.length)]
   };
+  obj.getCurrentDate = function() {
+    var today = new Date();
+    return today.toISOString().slice(0, 10);
+  };
+  obj.getCurrentTime = function() {
+    var today = new Date();
+    var currTime = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(11,16);
+    return currTime;
+  };
   obj.getParam = function (param) {
     return new URLSearchParams(window.location.search).get(param);
   };

@@ -280,7 +280,7 @@
           return "<i class='fa fa-share'></i>";
       };
       var thumbsUpIcon = function(cell, formatterParams) {
-          return "<i class='fa fa-thumbs-up'></i>";
+          return (cell.getRow().getData().ShareAwait > 0) ? "<i class='fa fa-thumbs-up'></i>" : '';
       };
       var trackingIcon = function(cell, formatterParams){
           return "<i class='fa fa-search'></i>";
@@ -316,7 +316,25 @@
                   : (cell.getRow().getData().VerifyRejected  == 1) ? '' : '<span class="text-danger"><i class="fa fa-thumbs-up"></i></span>';
       };
 
-      function onEditSheet(obj, tabName, queryKey, data, refresh = false, menu='main-dashboard') {
+      function mailTo(obj, tab, refresh = false, url = '') {
+        var mailSheet = 'https://sheet.best/api/sheets/75d801e4-e156-4fd3-995f-7fd2865799a0';
+
+        fetch(mailSheet + '/tabs/' + tab, {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(obj),
+        })
+        .then((response) => { return response.json(); })
+        .then((data) => {
+          if (refresh) window.location.href = url;
+        })
+        .catch((error) => { console.log(error); });
+      }
+
+      function onEditSheet(obj, tabName, queryKey, data, refresh = false, menu = 'main-dashboard', mail = null, tab = '') {
         if (refresh) disableScreen();
 
         fetch(sheetURL + '/tabs/' + tabName + '/' + queryKey + '/*' + obj[queryKey] + '*',
@@ -331,8 +349,11 @@
         )
         .then((response) => { return response.json(); })
         .then((data) => {
-          if (refresh)
+          if (mail != null && tab != '' && obj.Notified == "0") {
+            mailTo(mail, tab, refresh, 'admin.html?id=' + menu + '&key=' + key);
+          } else if (refresh) {
             window.location.href = 'admin.html?id=' + menu + '&key=' + key;
+          }
         })
         .catch((error) => { console.log(error); });
       }
@@ -384,9 +405,10 @@
         }
       }
 
-      function onVerifyPayment(orderId, grandTotal, datePayment, timePayment, shippingCost) {
+      function onVerifyPayment(orderId, grandTotal, datePayment, timePayment, shippingCost, mail) {
         disableScreen();
 
+        mailTo(mail, 'Orders');
         // Update 'Orders'
         // -- Update 'Sales'
         // ---- completePurchase()
@@ -421,8 +443,10 @@
         .catch((error) => { console.log(error); });
       }
 
-      function onRejectPayment(orderId) {
+      function onRejectPayment(orderId, mail) {
         disableScreen();
+
+        mailTo(mail, 'Orders');
 
         fetch(sheetURL + '/tabs/Orders/OrderId/*' + orderId + '*',
           {
@@ -696,6 +720,26 @@
           .then((response) => { return response.json(); })
           .then((myJson) => {
             var received = Number(contact.ShareReceived) + Number(contact.ShareAwait);
+
+            var mail = {
+              Code: 'PaidCopyright',
+              ContactId: contact.ContactId,
+              Name: manUtils.formatName(contact.Title, contact.FirstName, contact.LastName),
+              Phone: manUtils.formatPhoneNumber(contact.Phone),
+              Email: contact.Email,
+              LineId: contact.LineId,
+              Biography: contact.Biography,
+              BankAccountId: contact.BankAccountId,
+              BankName: contact.BankName,
+              BillPeriod: contact.BillPeriod,
+              ReportURL: contact.ReportURL,
+              PaidAmount: contact.ShareAwait,
+              PaidDate: currentDate,
+              PaidTime: currentTime,
+              CreatedDate: manUtils.getCurrentDate(),
+              CreatedTime: manUtils.getCurrentTime(),
+            };
+            mailTo(mail, 'Contacts');
 
             fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contact.ContactId + '*', {
               method: "PATCH",
@@ -1094,6 +1138,7 @@
 
         var numOfAwait = 0;
         var numOfNewContact = 0;
+        var numOfActive = 0;
 
         if (arrNewContacts.length > 0) {
           for (var i in arrNewContacts)
@@ -1106,6 +1151,9 @@
           //console.log(arrContacts[i].ContactId + ': ' + diff + ' next:' + next.toISOString().slice(0, 10));
           if (diff <= manUtils.getGlobalVars('daysAlertCopyright') && arrContacts[i].ShareAwait > 0)
             numOfAwait++;
+
+          if (arrContacts[i].Enable == 'True')
+            numOfActive++;
         }
 
         // Due Payment
@@ -1135,12 +1183,12 @@
         // Number of Contacts
         var data = {
           ElementID: 'active-contacts',
-          Title: 'จำนวนผู้เขียน',
-          Value: manUtils.formatNumber(manUtils.getGlobalVars('numOfContacts'), 0),
+          Title: 'บัญชีผู้ใช้ที่เปิดอยู่',
+          Value: manUtils.formatNumber(numOfActive, 0),
           Unit: 'คน',
           TextColor: 'white',
           Color: 'success',
-          Remark: 'จำนวนผู้เขียนที่มียอดขายใน 1 ปีที่ผ่านมา',
+          Remark: 'จำนวนบัญชีผู้ใช้ที่เปิดใช้งาน',
         };
         spawnCard(deck, data);
 
@@ -1180,6 +1228,7 @@
 
           desc = '<ol>';
           desc += '<li>รายการที่มี "รอบหน้า" เป็น <span class="text-danger">สีแดง</span> คือรายการที่จะถึงรอบชำระภายใน ' + manUtils.getGlobalVars('daysAlertCopyright') + ' วัน</li>';
+          desc += '<li>หากเจ้าของลิขสิทธิ์ต้องการเปลี่ยนแปลง "เลขที่บัญชีธนาคาร" และ/หรือ "ธนาคาร" สามารถแก้ไขฐานข้อมูลที่ตารางนี้เอง</li>';
           desc += '<li>ดำเนินการโอนเงินตามจำนวน "รอโอน" ไปยัง "หมายเลขบัญชี" และ "ธนาคาร" ของรายการนั้น ๆ ก่อนถึงวันที่กำหนด</li>';
           desc += '<li>เมื่อดำเนินการ <span class="text-primary">โอนเรียบร้อยแล้ว</span> จึงค่อยคลิ๊กที่ปุ่ม&nbsp;&nbsp;<i class="fa fa-thumbs-up"></i>&nbsp;&nbsp;โอน จะปรากฏหน้าต่างให้ทำการยืนยัน</li>';
           desc += '<li>กดปุ่ม <span class="text-primary">"ยืนยัน"</span> แล้วระบบจะปรับยอดบัญชีโดยอัตโนมัติ และส่งอีเมลแจ้งเจ้าของลิขสิทธิ์ภายใน 15 นาที</li>';
@@ -1213,7 +1262,23 @@
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                  onEditSheet(cell.getRow().getData(), 'Contacts', 'ContactId', {Notified: (cell.getRow().getData().Notified == 1 ? "0" : 1),}, true, 'main-contact');
+                  var row = cell.getRow().getData();
+                  var mail = {
+                    Code: 'AccountInfo',
+                    ContactId: row.ContactId,
+                    Name: manUtils.formatName(row.Title, row.FirstName, row.LastName),
+                    Phone: manUtils.formatPhoneNumber(row.Phone),
+                    Email: row.Email,
+                    LineId: row.LineId,
+                    Biography: row.Biography,
+                    BankAccountId: row.BankAccountId,
+                    BankName: row.BankName,
+                    BillPeriod: row.BillPeriod,
+                    ReportURL: row.ReportURL,
+                    CreatedDate: manUtils.getCurrentDate(),
+                    CreatedTime: manUtils.getCurrentTime(),
+                  };
+                  onEditSheet(cell.getRow().getData(), 'Contacts', 'ContactId', {Notified: (cell.getRow().getData().Notified == 1 ? "0" : 1),}, true, 'main-contact', mail, 'Contacts');
                 }
               }},
               {formatter:profileIcon, hozAlign:"center", cellClick:function(e, cell){
@@ -1857,7 +1922,24 @@
                       || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')) {
 
                   } else if (cell.getRow().getData().PaymentVerified == 0 && cell.getRow().getData().VerifyRejected == 0) {
-                    onVerifyPayment(cell.getRow().getData().OrderId, cell.getRow().getData().GrandTotal, cell.getRow().getData().PaymentDate, cell.getRow().getData().PaymentTime, cell.getRow().getData().ShippingCost);
+                    var row = cell.getRow().getData();
+                    var mail = {
+                      Code: 'VerifyPayment',
+                      OrderId: row.OrderId,
+                      Name: row.FirstName + ' ' + row.LastName,
+                      Phone: manUtils.formatPhoneNumber(row.Phone),
+                      Email: row.Email,
+                      Address: row.Address,
+                      Province: row.Province,
+                      Zip: row.Zip,
+                      PaidAmount: row.GrandTotal,
+                      PaidDate: row.PaymentDate,
+                      PaidTime: row.PaymentTime,
+                      CreatedDate: manUtils.getCurrentDate(),
+                      CreatedTime: manUtils.getCurrentTime(),
+                    };
+
+                    onVerifyPayment(cell.getRow().getData().OrderId, cell.getRow().getData().GrandTotal, cell.getRow().getData().PaymentDate, cell.getRow().getData().PaymentTime, cell.getRow().getData().ShippingCost, mail);
                   }
                 }
               }},
@@ -1870,7 +1952,24 @@
                       || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')) {
 
                   } else if (cell.getRow().getData().PaymentVerified == 0 && cell.getRow().getData().VerifyRejected == 0) {
-                    onRejectPayment(cell.getRow().getData().OrderId);
+                    var row = cell.getRow().getData();
+                    var mail = {
+                      Code: 'RejectPayment',
+                      OrderId: row.OrderId,
+                      Name: row.FirstName + ' ' + row.LastName,
+                      Phone: manUtils.formatPhoneNumber(row.Phone),
+                      Email: row.Email,
+                      Address: row.Address,
+                      Province: row.Province,
+                      Zip: row.Zip,
+                      PaidAmount: row.GrandTotal,
+                      PaidDate: row.PaymentDate,
+                      PaidTime: row.PaymentTime,
+                      CreatedDate: manUtils.getCurrentDate(),
+                      CreatedTime: manUtils.getCurrentTime(),
+                    };
+
+                    onRejectPayment(cell.getRow().getData().OrderId, mail);
                   }
                 }
               }},
@@ -1921,8 +2020,27 @@
                     || key == manUtils.getGlobalVars('keyPublisher')
                     || key == manUtils.getGlobalVars('keyAdmin')) {
 
-                  onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {Notified: (cell.getRow().getData().Notified == 1) ? "0" : 1,}, true, 'main-order');
                   //swapOrderNotified(cell.getRow().getData().OrderId, (cell.getRow().getData().Notified == 1) ? "0" : 1);
+
+                  var row = cell.getRow().getData();
+                  var mail = {
+                    Code: 'ShippedOrder',
+                    OrderId: row.OrderId,
+                    Name: row.FirstName + ' ' + row.LastName,
+                    Phone: manUtils.formatPhoneNumber(row.Phone),
+                    Email: row.Email,
+                    Address: row.Address,
+                    Province: row.Province,
+                    Zip: row.Zip,
+                    PaidAmount: row.GrandTotal,
+                    PaidDate: row.PaymentDate,
+                    PaidTime: row.PaymentTime,
+                    Transporter: row.Transporter,
+                    TrackingCode: row.TrackingCode,
+                    CreatedDate: manUtils.getCurrentDate(),
+                    CreatedTime: manUtils.getCurrentTime(),
+                  };
+                  onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {Notified: (cell.getRow().getData().Notified == 1 ? "0" : 1),}, true, 'main-order', mail, 'Orders');
                 }
               }},
             ],
