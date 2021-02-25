@@ -1389,49 +1389,58 @@
         document.getElementById('panel-header').innerHTML = 'หนังสือ (' + arrProducts.length + ')';
         //document.getElementById('panel-description').innerHTML = manUtils.getGlobalVars('loremShort');
 
-        var desc = '';
-        desc += '----- [เฉพาะฝ่ายจัดการ] -----<br><br>';
-        desc += 'ใช้งาน<ul>';
-        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;เปิดใช้งานอยู่ในระบบ</li>';
-        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ปิดใช้งานแล้ว</li>';
-        desc += '</ul>';
-        desc += 'ออกใหม่<ul>';
-        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;ปรากฏอยู่ในหน้าแรกใต้หัวข้อ "หนังสือออกใหม่"</li>';
-        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ไม่ปรากฏในหน้าแรก</li>';
-        desc += '<li>จำนวนรวมของ "หนังสือออกใหม่" ต้องหาร 4 ลงตัว ได้แก่ 4,8,12,...</li>';
-        desc += '</ul>';
-        desc += 'ขายดี<ul>';
-        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;ปรากฏอยู่ในหน้าแรกใต้หัวข้อ "หนังสือขายดี"</li>';
-        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ไม่ปรากฏในหน้าแรก</li>';
-        desc += '<li>จำนวนรวมของ "หนังสือขายดี" ต้องหาร 4 ลงตัว ได้แก่ 4,8,12,...</li>';
-        desc += '</ul>';
-        desc += 'ซื้อได้<ul>';
-        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;แสดงหน้าปก และเปิดจำหน่าย</li>';
-        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;แสดงหน้าปก แต่งดจำหน่าย</li>';
-        desc += '</ul>';
-        desc += 'ขายเฉพาะบุคคล<ul>';
-        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;ขายเฉพาะบุคคล</li>';
-        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ขายแบบสาธารณะ</li>';
-        desc += '</ul>';
+        var deck = document.createElement('div');
+        deck.className = 'card-deck mb-3 text-center';
+        panel.appendChild(deck);
 
-        var accordian = document.createElement('div');
-        accordian.className = 'accordian';
-        accordian.id = 'accordionContact';
+        var numOfHighlight = 0;
+        var numOfBestSeller = 0;
+        var numOfNotAvailable = 0;
+
+        for (var i in arrProducts) {
+          if (arrProducts[i].Highlight == 'True') numOfHighlight++;
+          if (arrProducts[i].BestSeller == 'True') numOfBestSeller++;
+          if (arrProducts[i].Available == 'False') numOfNotAvailable++;
+        }
+
+        // Due Payment
         var data = {
-          AccordianName: 'accordionContact',
-          Name: 'collapseOne',
-          Head: 'headingOne',
-          Title: 'การตั้งค่าหนังสือ',
-          Description: desc,
-          Icon: 'fa-lightbulb',
-          Show: '',
+          ElementID: 'book-highlight',
+          Title: 'หนังสือออกใหม่',
+          Value: manUtils.formatNumber(numOfHighlight, 0),
+          Unit: 'เล่ม',
+          TextColor: 'white',
+          Color: 'primary',
+          Remark: '',
         };
-        spawnAccordian(accordian, data);
+        spawnCard(deck, data);
 
-        panel.appendChild(accordian);
+        // Application Approve
+        var data = {
+          ElementID: 'book-bestseller',
+          Title: 'หนังสือขายดี',
+          Value: manUtils.formatNumber(numOfBestSeller, 0),
+          Unit: 'เล่ม',
+          TextColor: 'white',
+          Color: 'success',
+          Remark: '',
+        };
+        spawnCard(deck, data);
 
+        // Number of Contacts
+        var data = {
+          ElementID: 'book-not-available',
+          Title: 'งดจำหน่าย',
+          Value: manUtils.formatNumber(numOfNotAvailable, 0),
+          Unit: 'เล่ม',
+          TextColor: 'white',
+          Color: 'danger',
+          Remark: '',
+        };
+        spawnCard(deck, data);
 
-        panel.appendChild(document.createElement('hr'));
+        // HR
+        //panel.appendChild(document.createElement('hr'));
 
         var table = document.createElement('div');
         table.id = 'tabulator-books';
@@ -1484,6 +1493,50 @@
               }},
             ],
         });
+
+        // HR
+        panel.appendChild(document.createElement('hr'));
+
+        var desc = '';
+        desc += '----- [เฉพาะฝ่ายจัดการ] -----<br><br>';
+        desc += 'ใช้งาน<ul>';
+        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;เปิดใช้งานอยู่ในระบบ</li>';
+        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ปิดใช้งานแล้ว</li>';
+        desc += '</ul>';
+        desc += 'ออกใหม่<ul>';
+        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;ปรากฏอยู่ในหน้าแรกใต้หัวข้อ "หนังสือออกใหม่"</li>';
+        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ไม่ปรากฏในหน้าแรก</li>';
+        desc += '<li>จำนวนรวมของ "หนังสือออกใหม่" ต้องหาร 4 ลงตัว ได้แก่ 4,8,12,...</li>';
+        desc += '</ul>';
+        desc += 'ขายดี<ul>';
+        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;ปรากฏอยู่ในหน้าแรกใต้หัวข้อ "หนังสือขายดี"</li>';
+        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ไม่ปรากฏในหน้าแรก</li>';
+        desc += '<li>จำนวนรวมของ "หนังสือขายดี" ต้องหาร 4 ลงตัว ได้แก่ 4,8,12,...</li>';
+        desc += '</ul>';
+        desc += 'ซื้อได้<ul>';
+        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;แสดงหน้าปก และเปิดจำหน่าย</li>';
+        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;แสดงหน้าปก แต่งดจำหน่าย</li>';
+        desc += '</ul>';
+        desc += 'ขายเฉพาะบุคคล<ul>';
+        desc += '<li><span class="text-success"><i class="fa fa-check"></i></span>&nbsp;&nbsp;ขายเฉพาะบุคคล</li>';
+        desc += '<li><span class="text-danger"><i class="fa fa-times"></i></span>&nbsp;&nbsp;ขายแบบสาธารณะ</li>';
+        desc += '</ul>';
+
+        var accordian = document.createElement('div');
+        accordian.className = 'accordian';
+        accordian.id = 'accordionContact';
+        var data = {
+          AccordianName: 'accordionContact',
+          Name: 'collapseOne',
+          Head: 'headingOne',
+          Title: 'การตั้งค่าหนังสือ',
+          Description: desc,
+          Icon: 'fa-lightbulb',
+          Show: '',
+        };
+        spawnAccordian(accordian, data);
+
+        panel.appendChild(accordian);
 
         // HR
         panel.appendChild(document.createElement('hr'));
