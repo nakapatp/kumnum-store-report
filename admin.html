@@ -274,13 +274,18 @@
           return "<i class='fa fa-pencil'></i>";
       };
       var profileIcon = function(cell, formatterParams) {
-          return "<i class='fa fa-user'></i>";
+          return (key == manUtils.getGlobalVars('keySuperAdmin') || key == manUtils.getGlobalVars('keyPublisher'))
+                 ? "<i class='fa fa-user'></i>"
+                 : '';
       };
       var shareIcon = function(cell, formatterParams) {
           return "<i class='fa fa-share'></i>";
       };
       var thumbsUpIcon = function(cell, formatterParams) {
-          return (cell.getRow().getData().ShareAwait > 0) ? "<i class='fa fa-thumbs-up'></i>" : '';
+          return ((key == manUtils.getGlobalVars('keySuperAdmin') || key == manUtils.getGlobalVars('keyPublisher'))
+                  && cell.getRow().getData().ShareAwait > 0)
+                  ? "<i class='fa fa-thumbs-up'></i>"
+                  : '';
       };
       var trackingIcon = function(cell, formatterParams){
           return "<i class='fa fa-search'></i>";
@@ -682,7 +687,7 @@
         payingContact = contact;
 
         document.getElementById('modal-title').innerHTML = "โปรดอ่าน!";
-        document.getElementById('modal-text').innerHTML = "ควรยืนยันก็ต่อเมื่อ คุณได้ทำการ <span class='text-primary'>โอนเงินชำระค่าลิขสิทธิ์เรียบร้อยแล้ว</span> เท่านั้น<br><br>เมื่อกด 'ยืนยัน' จะมีอีเมลอัตโนมัติส่งไปแจ้งแก่เจ้าของลิขสิทธิ์ในไม่ช้า และไม่สามารถเรียกคืนได้<br><br>คุณแน่ใจที่จะยืนยันหรือไม่?";
+        document.getElementById('modal-text').innerHTML = "คุณควรกดยืนยันก็ต่อเมื่อ <span class='text-primary'>โอนเงินชำระค่าลิขสิทธิ์เรียบร้อยแล้ว</span> เท่านั้น<br><br>เมื่อกด 'ยืนยัน' จะมีอีเมลอัตโนมัติส่งไปแจ้งแก่เจ้าของลิขสิทธิ์ และไม่สามารถเรียกคืนได้<br><br>คุณแน่ใจที่จะยืนยันหรือไม่?";
 
         $("#modalConfirm").modal();
       }
@@ -1258,7 +1263,7 @@
             data:arrContacts, //set initial table data
             columns:[
               //{field:"Enable", hozAlign:"center", formatter:"tickCross"},
-              {title:"แจ้ง", field:"Notified", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+              {title:"แจ้ง", width:60, field:"Notified", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
@@ -1282,8 +1287,11 @@
                 }
               }},
               {formatter:profileIcon, hozAlign:"center", cellClick:function(e, cell){
-                //console.log(cell);
-                window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().SecretKey);
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
+
+                      window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().SecretKey);
+                }
               }},
               {title:"ชื่อ", width:180, field:"FirstName", formatter:function(cell, formatterParams){
                  return manUtils.formatName(cell.getRow().getData().Title, cell.getRow().getData().FirstName, cell.getRow().getData().LastName);
@@ -1390,12 +1398,12 @@
             maxHeight:450,
             data:arrNewContacts, //set initial table data
             columns:[
-              {title:"นำ", field:"Title"},
+              {title:"คำนำหน้า", width:90, field:"Title"},
               {title:"ชื่อ", field:"FirstName"},
               {title:"นามสกุล", field:"LastName"},
               {title:"โทรศัพท์", field:"Phone"},
               {title:"อีเมล", field:"Email"},
-              {title:"บัญชีไลน์", field:"LineId"},
+              {title:"ไลน์", field:"LineId"},
               {title:"สังกัด", field:"Biography"},
               {title:"เลขที่บัญชี", field:"BankAccountId", width:120, editor:"input", cellEdited:function(cell) {
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
@@ -1424,7 +1432,7 @@
                       onEditSheet(cell.getRow().getData(), 'NewContact', 'Phone', {ImageProfile:cell.getValue()} );
                 }
               }},
-              {title:"P", field:"Publisher", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+              {title:"OK", field:"Publisher", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
