@@ -1047,7 +1047,8 @@
                     onEditSheet(cell.getRow().getData(), 'Payments', 'ID', {
                       Income:"0",
                       Outcome:"0",
-                      Content: cell.getRow().getData().Content + ' - (ยกเลิก)',
+                      Content:cell.getRow().getData().Content + ' - (ยกเลิก)',
+                      Canceled:1,
                     }, true, 'main-dashboard');
                   }
                 }
