@@ -1022,7 +1022,7 @@
               }},
               {title:"รับ", hozAlign:"right", field:"Income", bottomCalc:"sum"},
               {title:"จ่าย", hozAlign:"right", field:"Outcome", bottomCalc:"sum"},
-              {title:"ผู้โอน/ผู้รับโอน", width:170, field:"ContactName", headerFilter:"input"},
+              {title:"ผู้โอน/ผู้รับโอน", width:180, field:"ContactName", headerFilter:"input"},
               {title:"เลขที่บัญชี", width:130, field:"BankAccountId", editor:"input", cellEdited:function(cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
@@ -1914,8 +1914,8 @@
         var table = new Tabulator("#tabulator-orders", {
             maxHeight:450,
             data:arrOrders, //set initial table data
+            initialSort:[{column:"CreatedDate", dir:"desc"}],
             columns:[
-              //{title:"วันที่สั่งซื้อ", width:100, field:"CreatedDate", headerFilter:"input"},
               {formatter:viewIcon, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('checkoutURL') + "?id=" + cell.getRow().getData().OrderId);
               }},
@@ -2051,6 +2051,7 @@
                   onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {Notified: (cell.getRow().getData().Notified == 1 ? "0" : 1),}, true, 'main-order', mail, 'Orders');
                 }
               }},
+              {title:"วันที่สั่งซื้อ", width:100, field:"CreatedDate", headerFilter:"input"},
             ],
         });
 
@@ -2076,7 +2077,7 @@
                 window.open(manUtils.getGlobalVars('checkoutURL') + "?id=" + cell.getRow().getData().OrderId);
               }},
               {title:"วันแจ้งโอน", width:100, hozAlign:"center", field:"PaymentDate", headerFilter:"input"},
-              {title:"เวลา", hozAlign:"center", field:"PaymentTime"},
+              //{title:"เวลา", hozAlign:"center", field:"PaymentTime"},
               {title:"ชื่อหนังสือ", width:250, field:"Title", headerFilter:"input"},
               {title:"ผู้เขียน", width:180, field:"Author", headerFilter:"input"},
               {title:"ซื้อ", width:60, field:"Amount", hozAlign:"center"},
