@@ -65,8 +65,9 @@ var manUtils = (function() {
             : title + ' ' + firstname + " " + lastname;
   };
   obj.formatNumber = function(number, fixed) {
-    var str = Number(number).toFixed(fixed).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-    return (fixed == 0) ? str.slice(0,-3) : str;
+    var n = (fixed == 0) ? 2 : fixed;
+    var str = Number(number).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    return (fixed == 0) ? str.slice(0, (-3 + (2 - n))) : str;
   };
   obj.formatPhoneNumber = function(number) {
     var str = number.replaceAll('-', '');
