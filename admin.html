@@ -729,7 +729,7 @@
             var mail = {
               Code: 'PaidCopyright',
               ContactId: contact.ContactId,
-              Name: manUtils.formatName(contact.Title, contact.FirstName, contact.LastName),
+              Name: contact.FirstName + ' ' + contact.LastName,
               Phone: manUtils.formatPhoneNumber(contact.Phone),
               Email: contact.Email,
               LineId: contact.LineId,
