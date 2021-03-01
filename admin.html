@@ -756,7 +756,7 @@
                  ShareReceived: received,
                  ShareLatest: contact.ShareAwait,
                  ShareAwait: "0",
-                 NextPaid: manuUtils.setDateOfMonth(nextDate.toISOString().slice(0, 10), 28),
+                 NextPaid: manUtils.setDateOfMonth(nextDate.toISOString().slice(0, 10), 28),
               }),
             })
             .then((response) => { return response.json(); })
