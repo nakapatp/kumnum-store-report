@@ -367,8 +367,14 @@
         if (key == manUtils.getGlobalVars('keySuperAdmin')
             || key == manUtils.getGlobalVars('keyPublisher')) {
 
+          if (keyName == 'Size' || keyName == 'Pages')
+            disableScreen();
+
           var price = obj.Price;
           var cost = obj.Cost;
+          var size = (keyName == 'Size') ? value : obj.Size;
+          var pages = (keyName == 'Pages') ? value : obj.Pages;
+          var weight = 1;
 
           var data = {};
           if (keyName == 'Price' || keyName == 'Cost') {
@@ -388,6 +394,22 @@
               data["SharePerUnit"] = Math.ceil(price - cost - data["PublisherShare"] - data["PlatformShare"]);
               data["CopyrightRatio"] = ((price - cost - data["PublisherShare"] - data["PlatformShare"]) / price) * 100;
             }
+
+          } else if (keyName == 'Size' || keyName == 'Pages') {
+
+            switch (size) {
+              case 'B5':
+                weight = (0.00175 * pages) + ((pages <= 100) ? 0.08 : (0.08 + (0.02 * Math.ceil((pages - 100)/100))));
+                break;
+              case 'A5':
+                weight = (0.0011 * pages) + ((pages <= 100) ? 0.05 : (0.05 + (0.01 * Math.ceil((pages - 100)/100))));
+                break;
+              case 'A4':
+                weight = (0.0022 * pages) + ((pages <= 100) ? 0.1 : (0.1 + (0.02 * Math.ceil((pages - 100)/100))));
+              default:
+
+            }
+            data["Weight"] = weight;
           }
           data[keyName] = value;
 
@@ -404,7 +426,8 @@
           .then((response) => { return response.json(); })
           .then((data) => {
             //console.log(keyName + ':' + value)
-            //window.location.href = "admin.html?id=main-order&key=" + key;
+            if (keyName == 'Size' || keyName == 'Pages')
+              window.location.href = "admin.html?id=main-spec&key=" + key;
           })
           .catch((error) => { console.log(error); });
         }
@@ -1720,7 +1743,8 @@
                     || key == manUtils.getGlobalVars('keyPublisher')
                     || key == manUtils.getGlobalVars('keyAdmin')) {
 
-                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Pages: cell.getValue(),});
+                  //onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Pages: cell.getValue(),});
+                  onEditBookSpec(cell.getRow().getData(), 'Pages', cell.getValue());
                 }
               }},
               {title:"ขนาด", field:"Size", editor:"select", editorParams:{"B5":"B5", "A5":"A5", "A4":"A4", "Letter":"Letter", "Cover":"Cover"}, cellEdited:function(cell) {
@@ -1728,7 +1752,8 @@
                     || key == manUtils.getGlobalVars('keyPublisher')
                     || key == manUtils.getGlobalVars('keyAdmin')) {
 
-                  onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Size: cell.getValue(),});
+                  //onEditSheet(cell.getRow().getData(), 'Products', 'ProductId', {Size: cell.getValue(),});
+                  onEditBookSpec(cell.getRow().getData(), 'Size', cell.getValue());
                 }
               }},
               {title:"พิมพ์", field:"Printing", editor:"select", editorParams:{"ปกสี / เนื้อในสี":"ปกสี / เนื้อในสี", "ปกสี / เนื้อในขาวดำ":"ปกสี / เนื้อในขาวดำ", "ปกขาวดำ / เนื้อในขาวดำ":"ปกขาวดำ / เนื้อในขาวดำ"}, cellEdited:function(cell) {
