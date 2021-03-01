@@ -729,7 +729,7 @@
             var mail = {
               Code: 'PaidCopyright',
               ContactId: contact.ContactId,
-              Name: contact.FirstName + ' ' + contact.LastName,
+              Name: manUtils.formatName(contact.Title, contact.FirstName, contact.LastName),
               Phone: manUtils.formatPhoneNumber(contact.Phone),
               Email: contact.Email,
               LineId: contact.LineId,
@@ -738,7 +738,7 @@
               BankName: contact.BankName,
               BillPeriod: contact.BillPeriod,
               ReportURL: contact.ReportURL,
-              PaidAmount: contact.ShareAwait,
+              PaidAmount: manUtils.formatNumber(contact.ShareAwait, 0),
               PaidDate: currentDate,
               PaidTime: currentTime,
               CreatedDate: manUtils.getCurrentDate(),
@@ -756,7 +756,7 @@
                  ShareReceived: received,
                  ShareLatest: contact.ShareAwait,
                  ShareAwait: "0",
-                 NextPaid: nextDate.toISOString().slice(0, 10),
+                 NextPaid: manuUtils.setDateOfMonth(nextDate.toISOString().slice(0, 10), 28),
               }),
             })
             .then((response) => { return response.json(); })

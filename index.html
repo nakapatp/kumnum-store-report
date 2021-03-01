@@ -648,8 +648,8 @@
               html += '<td>' + arrSales[i].Title + '</td>';
               html += '<td class="text-center">' + arrSales[i].Amount + '</td>';
               html += '<td class="text-right">' + arrSales[i].Price + '</td>';
-              html += '<td class="text-right">' + arrSales[i].SubTotal + '</td>';
-              html += '<td class="text-right">' + arrSales[i].CopyrightShare + '</td>';
+              html += '<td class="text-right">' + manUtils.formatNumber(arrSales[i].SubTotal, 0) + '</td>';
+              html += '<td class="text-right">' + manUtils.formatNumber(arrSales[i].CopyrightShare, 0) + '</td>';
             html += '</tr>';
             if (++n >= manUtils.getGlobalVars('latestSaleNum'))
               break;

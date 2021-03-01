@@ -132,6 +132,9 @@ var manUtils = (function() {
       let element = document.getElementById(id);
       element.value = valueToSelect;
   };
+  obj.setDateOfMonth = function (inStr, inDate) {
+    return inStr.slice(0, -2) + inDate;
+  };
 
   return obj;
 })();
