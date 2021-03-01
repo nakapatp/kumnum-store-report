@@ -1043,8 +1043,8 @@
                        ? '<span class="text-danger">' + cell.getRow().getData().Content + '</span>'
                        : cell.getRow().getData().Content;
               }},
-              {title:"รับ", hozAlign:"right", field:"Income", bottomCalc:"sum"},
-              {title:"จ่าย", hozAlign:"right", field:"Outcome", bottomCalc:"sum"},
+              {title:"รับ", width:70, hozAlign:"right", field:"Income", bottomCalc:"sum"},
+              {title:"จ่าย", width:70, hozAlign:"right", field:"Outcome", bottomCalc:"sum"},
               {title:"ผู้โอน/ผู้รับโอน", width:180, field:"ContactName", headerFilter:"input"},
               {title:"เลขที่บัญชี", width:130, field:"BankAccountId", editor:"input", cellEdited:function(cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
