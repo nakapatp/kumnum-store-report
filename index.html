@@ -266,61 +266,58 @@
 
           // Reconcile [Contacts] SaleCount, ShareReceived, ShareAwait
           // Reconcile [Products] Amount, CopyrightShare
+          var count = 0;
+          var received = 0;
+          var pending = 0;
+
+          // Reset to ZERO.
+          for (var i in arrProducts) {
+            setProductSales(arrProducts[i].ProductId, 0, true);
+          }
+          // Collective Sales
+          for (var i in arrSales) {
+            if (arrSales[i].PaymentStatus == 'ชำระเงินเสร็จสมบูรณ์') {
+              count += Number(arrSales[i].Amount);
+              pending += Number(arrSales[i].CopyrightShare)
+              setProductSales(arrSales[i].ProductId, arrSales[i].Amount, false);
+            }
+          }
           if (arrPayments.length == 0) {
-            init();
-
-          } else {
-            var count = 0;
-            var received = 0;
-            var pending = 0;
-
-            // Reset to ZERO.
-            for (var i in arrProducts) {
-              setProductSales(arrProducts[i].ProductId, 0, true);
-            }
-            // Collective Sales
-            for (var i in arrSales) {
-              if (arrSales[i].PaymentStatus == 'ชำระเงินเสร็จสมบูรณ์') {
-                count += Number(arrSales[i].Amount);
-                pending += Number(arrSales[i].CopyrightShare)
-                setProductSales(arrSales[i].ProductId, arrSales[i].Amount, false);
-              }
-            }
             // Collective Income.
             for (var i in arrPayments) {
              received += Number(arrPayments[i].Outcome);
             }
-            // Push Collective Product Values to DB.
-            for (var i in arrProducts) {
-              arrProducts[i].CopyrightShare = arrProducts[i].Amount * arrProducts[i].SharePerUnit;
-              patchProductSales(arrProducts[i], arrProducts[i].Amount);
-            }
-
-            var wait = pending - received;
-            //console.log("pending: " + pending);
-            //console.log("received: " + received);
-            fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*', {
-              method: "PATCH",
-              mode: "cors",
-              headers: {
-               "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-               SaleCount: count,
-               ShareReceived: received,
-               ShareAwait: (wait == 0) ? "0" : wait,
-              }),
-            })
-            .then((response) => { return response.json(); })
-            .then((myJson) => {
-              keyOwner.SaleCount = count;
-              keyOwner.ShareReceived = received;
-              keyOwner.ShareAwait = (wait == 0) ? "0" : wait;
-
-              init();
-            })
-            .catch((error) => { console.log(error); });
           }
+          // Push Collective Product Values to DB.
+          for (var i in arrProducts) {
+            arrProducts[i].CopyrightShare = arrProducts[i].Amount * arrProducts[i].SharePerUnit;
+            patchProductSales(arrProducts[i], arrProducts[i].Amount);
+          }
+
+          var wait = pending - received;
+          //console.log("pending: " + pending);
+          //console.log("received: " + received);
+          fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contactId + '*', {
+            method: "PATCH",
+            mode: "cors",
+            headers: {
+             "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+             SaleCount: count,
+             ShareReceived: received,
+             ShareAwait: (wait == 0) ? "0" : wait,
+            }),
+          })
+          .then((response) => { return response.json(); })
+          .then((myJson) => {
+            keyOwner.SaleCount = count;
+            keyOwner.ShareReceived = received;
+            keyOwner.ShareAwait = (wait == 0) ? "0" : wait;
+
+            init();
+          })
+          .catch((error) => { console.log(error); });
         })
         .catch((error) => { console.log(error); });
       }
