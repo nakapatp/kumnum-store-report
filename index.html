@@ -225,7 +225,7 @@
       }
 
       function loadPayments(contactId) {
-        // GET Author Info
+        // GET Author Payments
         fetch(sheetURL + '/tabs/Payments/ContactId/*' + contactId + '*')
         .then((response) => { return response.json(); })
         .then((myJson) => {
