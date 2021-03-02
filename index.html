@@ -282,7 +282,7 @@
               setProductSales(arrSales[i].ProductId, arrSales[i].Amount, false);
             }
           }
-          if (arrPayments.length == 0) {
+          if (arrPayments.length > 0) {
             // Collective Income.
             for (var i in arrPayments) {
              received += Number(arrPayments[i].Outcome);
