@@ -304,8 +304,8 @@
              "Content-Type": "application/json",
             },
             body: JSON.stringify({
-             SaleCount: count,
-             ShareReceived: received,
+             SaleCount: (count == 0) ? "0" : count,
+             ShareReceived: (received == 0) ? "0" : received,
              ShareAwait: (wait == 0) ? "0" : wait,
             }),
           })
@@ -343,8 +343,8 @@
            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-           Amount: amount,
-           CopyrightShare: share,
+           Amount: (amount == 0) ? "0" : amount,
+           CopyrightShare: (share == 0) ? "0" : share,
           }),
         })
         .then((response) => { return response.json(); })
