@@ -113,7 +113,8 @@
 
     <!-- Dashboard JavaScript -->
     <script type="text/javascript">
-      const sheetURL = 'https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc'; // Production
+      const sheetURL = 'https://sheet.best/api/sheets/b195e9e6-e211-451d-8054-53bf717c89e6'; // Production (pnakapat)
+      //const sheetURL = 'https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc'; // Production
       //const sheetURL = 'https://sheet.best/api/sheets/86299b5c-1850-4f51-b969-a44721bfe390'; // Dev
       var menuId = (manUtils.getParam('id') == null || manUtils.getParam('id') == "") ? 'main-dashboard' : manUtils.getParam('id');
       var key = manUtils.getParam('key');
@@ -452,7 +453,7 @@
         for (var i in arrProducts) {
           html += '<tr>';
             html += '<td class="text-center" scope="row">' + Number(Number(i) + 1) +'</td>';
-            html += '<td class="text-center">' + manUtils.formatDateThai(arrProducts[i].CreatedDate) + '</td>';
+            html += '<td class="text-center">' + manUtils.formatDateThai(arrProducts[i].CreatedDate, true) + '</td>';
             html += '<td>' + arrProducts[i].Title + '</td>';
             html += '<td class="text-center">' + arrProducts[i].Amount + '</td>';
             html += '<td class="text-right">' + arrProducts[i].Price + '</td>';
