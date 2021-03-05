@@ -47,6 +47,7 @@
             <ul class="nav flex-column" id="menu-sidebar">
               <!-- Dynamically load sidebar menu item -->
             </ul>
+            <!--
             <hr>
             <ul class="nav flex-column mb-2">
               <li class="nav-item">
@@ -55,6 +56,7 @@
                 </a>
               </li>
             </ul>
+            -->
           </div>
         </nav>
 
@@ -1953,7 +1955,7 @@
               {formatter:verifyIcon, hozAlign:"center", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')
-                    || key == manUtils.getGlobalVars('keyAdmin')) {
+                  /*|| key == manUtils.getGlobalVars('keyAdmin')*/) { // Remove 'Admin' to Verify/Reject
 
                   if ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                       || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')) {
@@ -1983,7 +1985,7 @@
               {formatter:rejectIcon, hozAlign:"center", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')
-                    || key == manUtils.getGlobalVars('keyAdmin')) {
+                  /*|| key == manUtils.getGlobalVars('keyAdmin')*/) { // Remove 'Admin' to Verify/Reject
 
                   if ((cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์')
                       || (cell.getRow().getData().OrderStatus == 'ป้อนข้อมูลจัดส่ง' || cell.getRow().getData().OrderStatus == 'รอการชำระเงิน')) {
@@ -2020,7 +2022,7 @@
               {formatter:specIcon, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('specURL') + '?id=' + cell.getRow().getData().OrderId);
               }},
-              {title:"ขนส่ง", width:80, field:"Transporter", editor:"select", editorParams:{"Flash":"Flash", "J&T":"J&T", "Kerry":"Kerry", "ThaiPost":"ThaiPost"}, cellEdited:function(cell){
+              {title:"ขนส่ง", width:80, field:"Transporter", editor:"select", editorParams:{"Flash":"Flash", "J&T":"J&T", "Kerry":"Kerry", "NimExpress":"NimExpress", "ThaiPost":"ThaiPost"}, cellEdited:function(cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')
                     || key == manUtils.getGlobalVars('keyAdmin')) {
@@ -2047,6 +2049,7 @@
                   case 'Flash': url = manUtils.getGlobalVars('trackingFlash'); break;
                   case 'J&T': url = manUtils.getGlobalVars('trackingJ&T'); break;
                   case 'Kerry': url = manUtils.getGlobalVars('trackingKerry'); break;
+                  case 'NimExpress': url = manUtils.getGlobalVars('trackingNimExpress'); break;
                   case 'ThaiPost': url = manUtils.getGlobalVars('trackingThaiPost'); break;
                   default: url = "#"
                 }
@@ -2120,9 +2123,8 @@
       }
 
       function showSidebarMenu(menuId) {
-        document.getElementById('menu-website').href = manUtils.getGlobalVars('websiteURL');
+        //document.getElementById('menu-website').href = manUtils.getGlobalVars('websiteURL');
 
-        var topMenu = [];
         var menuItems = [];
 
         if (key == manUtils.getGlobalVars('keySuperAdmin')
@@ -2136,9 +2138,9 @@
         menuItems.push({icon: 'fa-clipboard-list', caption: 'สเปคหนังสือ', name: 'main-spec', href: 'admin.html?id=main-spec&key=' + key});
         menuItems.push({icon: 'fa-shopping-cart', caption: 'คำสั่งซื้อ', name: 'main-order', href: 'admin.html?id=main-order&key=' + key});
         menuItems.push({icon: 'fa-clipboard', caption: 'รายการขาย', name: 'main-sale', href: 'admin.html?id=main-sale&key=' + key});
+        menuItems.push({icon: 'fa-globe', caption: 'เวบไซต์', name: 'main-website', href: manUtils.getGlobalVars('websiteURL')});
 
         //console.log(key);
-        var htmlTop = "";
         var html = "";
         if (menuItems.length > 0) {
           for (var i in menuItems) {
