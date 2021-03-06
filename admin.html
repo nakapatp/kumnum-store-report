@@ -266,7 +266,13 @@
         })
         .catch((error) => { console.log(error); });
       }
-
+      var banIcon = function(cell, formatterParams) {
+          var icon = "<i class='fa fa-exclamation-triangle'></i>";
+          return (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์'
+                  && cell.getRow().getData().TrackingCode != '')
+                  ? ''
+                  : icon;
+      };
       var bookIcon = function(cell, formatterParams) {
           return "<i class='fa fa-book'></i>";
       };
@@ -2015,7 +2021,41 @@
               {title:"บ.", width:60, hozAlign:"right", field:"GrandTotal"},
               {title:"วันแจ้งโอน", width:100, hozAlign:"center", field:"PaymentDate", headerFilter:"input"},
               {hozAlign:"center", field:"PaymentTime"},
-              {title:"", field:"PaymentVerified", hozAlign:"center", formatter:"tickCross"},
+              //{title:"", field:"PaymentVerified", hozAlign:"center", formatter:"tickCross"},
+              {formatter:banIcon, hozAlign:"center", cellClick:function(e, cell) {
+
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                    var row = cell.getRow().getData();
+
+                    if (row.OrderStatus == 'ชำระเงินเสร็จสมบูรณ์'
+                        && row.TrackingCode != '') {
+
+                    } else {
+
+                      var mail = {
+                        Code: 'IncompleteInfo',
+                        OrderId: row.OrderId,
+                        Name: row.FirstName + ' ' + row.LastName,
+                        Phone: manUtils.formatPhoneNumber(row.Phone),
+                        Email: row.Email,
+                        Address: row.Address,
+                        Province: row.Province,
+                        Zip: row.Zip,
+                        PaidAmount: row.GrandTotal,
+                        PaidDate: row.PaymentDate,
+                        PaidTime: row.PaymentTime,
+                        Transporter: row.Transporter,
+                        TrackingCode: row.TrackingCode,
+                        CreatedDate: manUtils.getCurrentDate(),
+                        CreatedTime: manUtils.getCurrentTime(),
+                      };
+                      onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {OrderStatus: "ป้อนข้อมูลจัดส่ง"}, true, 'main-order', mail, 'Orders');
+                    }
+                }
+              }},
               {formatter:printIcon, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('invoiceURL') + '?id=' + cell.getRow().getData().OrderId);
               }},
