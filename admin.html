@@ -1376,6 +1376,13 @@
                   onEditSheet(cell.getRow().getData(), 'Contacts', 'ContactId', {BankName:cell.getValue()} );
                 }
               }},
+              {title:"สังกัด", field:"Biography", editor:"input", cellEdited:function(cell){
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')) {
+
+                  onEditSheet(cell.getRow().getData(), 'Contacts', 'ContactId', {Biography:cell.getValue()} );
+                }
+              }},
             ],
         });
 
