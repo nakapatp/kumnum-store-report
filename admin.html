@@ -2069,6 +2069,14 @@
               {formatter:specIcon, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('specURL') + '?id=' + cell.getRow().getData().OrderId);
               }},
+              {title:"ผลิต", field:"Printed", hozAlign:"center", formatter:"tickCross", cellClick:function(e, cell){
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                  onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {Printed: (cell.getRow().getData().Printed == 1 ? "0" : 1),}, true, 'main-order');
+                }
+              }},
               {title:"ขนส่ง", width:80, field:"Transporter", editor:"select", editorParams:{"Flash":"Flash", "J&T":"J&T", "Kerry":"Kerry", "NimExpress":"NimExpress", "ThaiPost":"ThaiPost"}, cellEdited:function(cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')
