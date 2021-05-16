@@ -1963,6 +1963,40 @@
               {formatter:viewIcon, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('checkoutURL') + "?id=" + cell.getRow().getData().OrderId);
               }},
+              {formatter:banIcon, hozAlign:"center", cellClick:function(e, cell) {
+
+                if (key == manUtils.getGlobalVars('keySuperAdmin')
+                    || key == manUtils.getGlobalVars('keyPublisher')
+                    || key == manUtils.getGlobalVars('keyAdmin')) {
+
+                    var row = cell.getRow().getData();
+
+                    if (row.OrderStatus == 'ชำระเงินเสร็จสมบูรณ์'
+                        && row.TrackingCode != '') {
+
+                    } else {
+
+                      var mail = {
+                        Code: 'IncompleteInfo',
+                        OrderId: row.OrderId,
+                        Name: row.FirstName + ' ' + row.LastName,
+                        Phone: manUtils.formatPhoneNumber(row.Phone),
+                        Email: row.Email,
+                        Address: row.Address,
+                        Province: row.Province,
+                        Zip: row.Zip,
+                        PaidAmount: row.GrandTotal,
+                        PaidDate: row.PaymentDate,
+                        PaidTime: row.PaymentTime,
+                        Transporter: row.Transporter,
+                        TrackingCode: row.TrackingCode,
+                        CreatedDate: manUtils.getCurrentDate(),
+                        CreatedTime: manUtils.getCurrentTime(),
+                      };
+                      onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {OrderStatus: "ป้อนข้อมูลจัดส่ง"}, true, 'main-order', mail, 'Orders');
+                    }
+                }
+              }},
               {title:"เลขที่คำสั่ง", width:120, field:"OrderId"},
               {title:"สถานะคำสั่ง", width:170, field:"OrderStatus", editor:"select", editorParams:{"ป้อนข้อมูลจัดส่ง":"ป้อนข้อมูลจัดส่ง", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}, headerFilter:true, headerFilterParams:{"ป้อนข้อมูลจัดส่ง":"ป้อนข้อมูลจัดส่ง", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}},
               {formatter:verifyIcon, hozAlign:"center", cellClick:function(e, cell){
@@ -2029,40 +2063,6 @@
               {title:"วันแจ้งโอน", width:100, hozAlign:"center", field:"PaymentDate", headerFilter:"input"},
               {hozAlign:"center", field:"PaymentTime"},
               //{title:"", field:"PaymentVerified", hozAlign:"center", formatter:"tickCross"},
-              {formatter:banIcon, hozAlign:"center", cellClick:function(e, cell) {
-
-                if (key == manUtils.getGlobalVars('keySuperAdmin')
-                    || key == manUtils.getGlobalVars('keyPublisher')
-                    || key == manUtils.getGlobalVars('keyAdmin')) {
-
-                    var row = cell.getRow().getData();
-
-                    if (row.OrderStatus == 'ชำระเงินเสร็จสมบูรณ์'
-                        && row.TrackingCode != '') {
-
-                    } else {
-
-                      var mail = {
-                        Code: 'IncompleteInfo',
-                        OrderId: row.OrderId,
-                        Name: row.FirstName + ' ' + row.LastName,
-                        Phone: manUtils.formatPhoneNumber(row.Phone),
-                        Email: row.Email,
-                        Address: row.Address,
-                        Province: row.Province,
-                        Zip: row.Zip,
-                        PaidAmount: row.GrandTotal,
-                        PaidDate: row.PaymentDate,
-                        PaidTime: row.PaymentTime,
-                        Transporter: row.Transporter,
-                        TrackingCode: row.TrackingCode,
-                        CreatedDate: manUtils.getCurrentDate(),
-                        CreatedTime: manUtils.getCurrentTime(),
-                      };
-                      onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {OrderStatus: "ป้อนข้อมูลจัดส่ง"}, true, 'main-order', mail, 'Orders');
-                    }
-                }
-              }},
               {formatter:printIcon, hozAlign:"center", cellClick:function(e, cell){
                 window.open(manUtils.getGlobalVars('invoiceURL') + '?id=' + cell.getRow().getData().OrderId);
               }},
