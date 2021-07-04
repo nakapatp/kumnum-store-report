@@ -446,7 +446,7 @@
       function onVerifyPayment(orderId, grandTotal, datePayment, timePayment, shippingCost, mail) {
         disableScreen();
 
-        mailTo(mail, 'Orders');
+        mailTo(mail, 'VerifyPayment'); // Previous: 'Orders'
         // Update 'Orders'
         // -- Update 'Sales'
         // ---- completePurchase()
@@ -484,7 +484,7 @@
       function onRejectPayment(orderId, mail) {
         disableScreen();
 
-        mailTo(mail, 'Orders');
+        mailTo(mail, 'RejectPayment'); // Previous: 'Orders'
 
         fetch(sheetURL + '/tabs/Orders/OrderId/*' + orderId + '*',
           {
@@ -2135,7 +2135,7 @@
                     CreatedDate: manUtils.getCurrentDate(),
                     CreatedTime: manUtils.getCurrentTime(),
                   };
-                  onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {Notified: (cell.getRow().getData().Notified == 1 ? "0" : 1),}, true, 'main-order', mail, 'Orders');
+                  onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {Notified: (cell.getRow().getData().Notified == 1 ? "0" : 1),}, true, 'main-order', mail, 'ShippedOrder');
                 }
               }},
               {title:"วันที่สั่งซื้อ", width:100, field:"CreatedDate", headerFilter:"input"},
