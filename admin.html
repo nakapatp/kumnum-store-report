@@ -777,7 +777,7 @@
               CreatedDate: manUtils.getCurrentDate(),
               CreatedTime: manUtils.getCurrentTime(),
             };
-            mailTo(mail, 'Contacts');
+            mailTo(mail, 'PaidCopyright');
 
             fetch(sheetURL + '/tabs/Contacts/ContactId/*' + contact.ContactId + '*', {
               method: "PATCH",
@@ -1317,7 +1317,7 @@
                     CreatedDate: manUtils.getCurrentDate(),
                     CreatedTime: manUtils.getCurrentTime(),
                   };
-                  onEditSheet(cell.getRow().getData(), 'Contacts', 'ContactId', {Notified: (cell.getRow().getData().Notified == 1 ? "0" : 1),}, true, 'main-contact', mail, 'Contacts');
+                  onEditSheet(cell.getRow().getData(), 'Contacts', 'ContactId', {Notified: (cell.getRow().getData().Notified == 1 ? "0" : 1),}, true, 'main-contact', mail, 'AccountInfo');
                 }
               }},
               {formatter:profileIcon, hozAlign:"center", cellClick:function(e, cell){
