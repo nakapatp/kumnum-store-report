@@ -123,6 +123,7 @@
       var arrContacts = null;
       var arrProducts = null;
       var arrOrders = null;
+      var arrPrintingList = null;
       var arrSales = null;
       var arrNewContacts = null;
       var arrNewProduct = null;
@@ -248,24 +249,33 @@
         .then((myJson) => {
           arrOrders = myJson;
 
-          showOrders(iPanel);
+          //showOrders(iPanel);
+          loadSales(iPanel);
         })
         .catch((error) => { console.log(error); });
       }
 
       function loadSales(iPanel) {
         // GET Author's Collections
-        fetch(sheetURL + '/tabs/Sales/0:300')
+        fetch(sheetURL + '/tabs/Sales/0:600')
         .then((response) => {
             return response.json();
         })
         .then((myJson) => {
           arrSales = myJson;
 
-          showSales(iPanel);
+          if (menuId == 'main-order') {
+            showOrders(iPanel);
+          }
+          else {
+            showSales(iPanel);
+          }
         })
         .catch((error) => { console.log(error); });
       }
+      var autoNumFormatter = function() {
+      	return $("#tabulator-printing-list .tabulator-row").length;
+      };
       var banIcon = function(cell, formatterParams) {
           var icon = "<i class='fa fa-exclamation-triangle'></i>";
           return (cell.getRow().getData().OrderStatus == 'ชำระเงินเสร็จสมบูรณ์'
@@ -1913,6 +1923,7 @@
                    && arrOrders[i].TrackingCode == "") {
             awaiting++;
           }
+
         }
 
         // Payment Await
@@ -2144,6 +2155,82 @@
 
         // HR
         panel.appendChild(document.createElement('hr'));
+
+        // Table of Printing List
+        var hTablePrintingList = document.createElement('h3');
+        hTablePrintingList.innerHTML = 'รายการหนังสือต้องผลิต';
+        panel.appendChild(hTablePrintingList);
+
+        var pTablePritingList = document.createElement('p');
+        pTablePritingList.innerHTML = manUtils.getGlobalVars('loremShort');
+        panel.appendChild(pTablePritingList);
+
+        var table = document.createElement('div');
+        table.id = 'tabulator-printing-list';
+        panel.appendChild(table);
+
+
+        var arrPrintingCount = [];
+        for (var i in arrOrders) {
+          if (arrOrders[i].OrderStatus == 'ชำระเงินเสร็จสมบูรณ์'
+              && arrOrders[i].Printed == "0")
+          {
+            for (var j in arrSales) {
+              if (arrOrders[i].OrderId == arrSales[j].OrderId) {
+                if (manUtils.arrayHasKeyValue(arrPrintingCount, "ProductId", arrSales[j].ProductId)) {
+                  for (var k in arrPrintingCount) {
+                    if (arrPrintingCount[k].ProductId == arrSales[j].ProductId) {
+                      arrPrintingCount[k].Amount += Number(arrSales[j].Amount);
+                      break;
+                    }
+                  }
+                }
+                else {
+                  arrPrintingCount.push({
+                    ProductId: arrSales[j].ProductId,
+                    Amount: Number(arrSales[j].Amount)
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        arrPrintingList = [];
+        for (var i in arrPrintingCount) {
+          for (var j in arrSales) {
+            if (arrPrintingCount[i].ProductId == arrSales[j].ProductId) {
+              var data = {
+                ContactId: arrSales[j].ContactId,
+                ProductId: arrSales[j].ProductId,
+                Title: arrSales[j].Title,
+                Author: arrSales[j].Author,
+                Amount: arrPrintingCount[i].Amount,
+              };
+              arrPrintingList.push(data);
+              break;
+            }
+          }
+        }
+        //console.log(arrPrintingList);
+
+        var table = new Tabulator("#tabulator-printing-list", {
+            maxHeight:450,
+            data:arrPrintingList, //set initial table data
+            columns:[
+              {title:"#", width:50, formatter:autoNumFormatter}, //incrementing row number
+              {formatter:bookIcon, hozAlign:"center", cellClick:function(e, cell){
+                window.open(manUtils.getGlobalVars('shopURL') + '?id=' + cell.getRow().getData().ContactId + '&book=' + cell.getRow().getData().ProductId);
+              }},
+              {title:"ชื่อหนังสือ", field:"Title"},
+              {title:"ผู้เขียน", field:"Author"},
+              {title:"จำนวนผลิต (เล่ม)", field:"Amount", hozAlign:"center"},
+            ],
+        });
+
+        // HR
+        panel.appendChild(document.createElement('hr'));
+
       }
 
       function showSales(panel) {
