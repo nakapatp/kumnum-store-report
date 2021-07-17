@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="css/login-page.css">
+  <!-- <script defer src="js/login-page.js"></script> -->
+  <script src="js/manutils.js"></script>
+</head>
+<body>
+  <main id="main-holder">
+    <h1 id="login-header">เข้าสู่ระบบ "คำนำ"</h1>
+
+    <div id="login-error-msg-holder">
+      <p id="login-error-msg"><big><big>ข้อมูลไม่ถูกต้อง</big></big> <span id="error-msg-second-line">...<br/>โปรดตรวจสอบชื่ออีเมลที่กรอก และรหัสลับ จากอีเมลยืนยันข้อมูลบัญชีผู้ใช้ของท่านอีกครั้ง</span></p>
+    </div>
+
+    <form id="login-form">
+      <input type="text" name="username" id="username-field" class="login-form-field" placeholder="Email">
+      <input type="password" name="password" id="password-field" class="login-form-field" placeholder="Password">
+      <input type="submit" value="เข้าสู่ระบบ" id="login-form-submit">
+    </form>
+
+  </main>
+</body>
+<script>
+  const sheetURL = 'https://sheet.best/api/sheets/b195e9e6-e211-451d-8054-53bf717c89e6'; // Production (pnakapat)
+
+  const loginForm = document.getElementById("login-form");
+  const loginButton = document.getElementById("login-form-submit");
+  const loginErrorMsg = document.getElementById("login-error-msg");
+
+  var keyOwner = null;
+
+  if (manUtils.getParam('signout') == 1) {
+    manUtils.setCookie("username", "");
+    manUtils.setCookie("password", "");
+  }
+
+  var user = manUtils.getCookie("username");
+  if (user != '' && user != null) {
+    document.getElementById('username-field').value = user;
+  }
+
+  loginButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      const username = loginForm.username.value;
+      const password = loginForm.password.value;
+
+      if (username != '' && password != '') {
+        manUtils.setCookie("username", loginForm.username.value);
+        loadContactsByKey(password);
+      } else {
+        loginErrorMsg.style.opacity = 1;
+      }
+  })
+
+  function loadContactsByKey(keyId) {
+    // GET Author Info
+    fetch(sheetURL + '/tabs/Contacts/SecretKey/*' + keyId + '*')
+    .then((response) => { return response.json(); })
+    .then((myJson) => {
+      keyOwner = myJson[0];
+
+      if (keyOwner == null) {
+
+        loginErrorMsg.style.opacity = 1;
+
+      } else if (keyOwner.SecretKey == loginForm.password.value) {
+
+        manUtils.setCookie("username", keyOwner.Email);
+        manUtils.setCookie("password", keyOwner.SecretKey);
+        window.location.href = "index.html?id=main-dashboard";
+      //} else if (keyOwner == null
+      //      || key == null || key == '' || key == 0) {
+          //showPage404();
+      //    window.location.href = "login.html";
+
+      //} else
+      } else {
+        manUtils.setCookie("username", "");
+        manUtils.setCookie("password", "");
+
+        window.location.href = "login.html";
+      }
+    })
+    .catch((error) => { console.log(error); });
+  }
+</script>
+</html>

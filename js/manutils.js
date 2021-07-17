@@ -15,6 +15,46 @@ var manUtils = (function() {
     }
     return false;
   };
+  obj.checkCookie = function() {
+    let user = obj.getCookie("username");
+    if (user != "" && user != null) {
+      //alert("Welcome again " + user);
+    } else {
+      user = prompt("Please enter your name:", "");
+      if (user != "" && user != null) {
+        obj.setCookie("username", user, 365);
+      }
+    }
+    return user;
+  }
+  obj.getCookie = function(cname) {
+    return sessionStorage.getItem(cname);
+    /* Cookie version (Discarded)
+    let name = cname + "=";
+    let ca = document.cookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+    */
+  }
+  obj.setCookie = function(cname, cvalue, exdays) {
+    sessionStorage.setItem(cname, cvalue);
+    return true;
+    /* Cookie version (Discarded)
+    const d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    let expires = "expires="+d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    */
+  }
+
   obj.encryptKey = function(raw) {
     var key = '';
 

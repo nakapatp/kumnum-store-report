@@ -128,8 +128,9 @@
 
       function showPage404() {
         document.getElementById('container-main').style.display = 'none';
-        var desc = 'การเรียกดูรายงานการขายต้องใช้ <span class="text-primary"><i class="fa fa-key"></i> รหัสส่วนตัว</span> ที่คุณได้รับยืนยันการลงทะเบียนสำเร็จ<br/>';
-        desc += 'โปรดตรวจสอบอีเมลดังกล่าว หรือหากยังไม่ได้รับอีเมลยืนยัน กรุณาติดต่อเจ้าหน้าที่ของ "คำนำ" ที่ดูแลคุณอยู่';
+        var desc = 'การเรียกดูรายงานการขายต้องใช้ <span class="text-primary"><i class="fa fa-key"></i> รหัสส่วนตัว</span> ในอีเมลที่คุณได้รับคำยืนยันการลงทะเบียนสำเร็จจากสำนักพิมพ์<br/>';
+        desc += 'โปรดตรวจสอบข้อมูลจากอีเมลดังกล่าวอีกครั้ง หรือ<br/>';
+        desc += 'หากยังไม่ได้รับอีเมลยืนยัน กรุณาติดต่อเจ้าหน้าที่ของ "คำนำ" ที่ดูแลคุณอยู่';
         document.getElementById('container-404').innerHTML = manUtils.getHTML404('ขออภัย!', 'เราไม่พบข้อมูลที่คุณกำลังมองหา', desc);
         document.getElementById('overlay').remove();
       }
@@ -204,8 +205,7 @@
         .then((response) => { return response.json(); })
         .then((data) => {
           //console.log(phone + ', ' + email);
-          window.location.href = "index.html?id=main-profile&key=" + key;
-          //window.location.href = manUtils.getGlobalVars('reportURL') + '?id=main-profile&key=' + key;
+          window.location.href = "index.html?id=main-profile";
         })
         .catch((error) => { console.log(error); });
       }
@@ -217,11 +217,18 @@
         .then((myJson) => {
           keyOwner = myJson[0];
 
-          if (keyOwner == null
-              || key == null || key == '' || key == 0) {
-            showPage404();
-          } else {
+          if (manUtils.getCookie("username") == keyOwner.Email
+              && manUtils.getCookie("password") == keyOwner.SecretKey) {
+
             loadPayments(keyOwner.ContactId);
+          //} else if (keyOwner == null
+          //      || key == null || key == '' || key == 0) {
+              //showPage404();
+          //    window.location.href = "login.html";
+
+          //} else
+          } else {
+            window.location.href = "login.html";
           }
         })
         .catch((error) => { console.log(error); });
@@ -855,11 +862,12 @@
         //document.getElementById('menu-website').href = manUtils.getGlobalVars('websiteURL');
 
         var menuItems = [
-          {icon: 'fa-money', caption: 'รายงานสรุป', name: 'main-dashboard', href: 'index.html?id=main-dashboard&key=' + manUtils.getParam('key')},
-          {icon: 'fa-user', caption: 'ข้อมูลส่วนตัว', name: 'main-profile', href: 'index.html?id=main-profile&key=' + manUtils.getParam('key')},
-          {icon: 'fa-shopping-cart', caption: 'ร้านหนังสือ', name: 'main-shop', href: 'index.html?id=main-shop&key=' + manUtils.getParam('key')},
-          {icon: 'fa-book', caption: 'หนังสือ', name: 'main-book', href: 'index.html?id=main-book&key=' + manUtils.getParam('key')},
+          {icon: 'fa-money', caption: 'รายงานสรุป', name: 'main-dashboard', href: 'index.html?id=main-dashboard'},
+          {icon: 'fa-user', caption: 'ข้อมูลส่วนตัว', name: 'main-profile', href: 'index.html?id=main-profile'},
+          {icon: 'fa-shopping-cart', caption: 'ร้านหนังสือ', name: 'main-shop', href: 'index.html?id=main-shop'},
+          {icon: 'fa-book', caption: 'หนังสือ', name: 'main-book', href: 'index.html?id=main-book'},
           {icon: 'fa-globe', caption: 'เว็บไซต์', name: 'main-website', href: manUtils.getGlobalVars('websiteURL')},
+          {icon: 'fa-sign-out-alt', caption: 'ออกจากระบบ', name: 'main-logout', href:'login.html?signout=1'},
         ];
         var html = "";
 
@@ -934,7 +942,8 @@
         .then((myJson) => {
           globalVars = myJson;
 
-          loadContactsByKey(manUtils.decryptKey(key));
+          //loadContactsByKey(manUtils.decryptKey(key));
+          loadContactsByKey(manUtils.getCookie("password"));
         })
         .catch((error) => { console.log(error); });
       });
