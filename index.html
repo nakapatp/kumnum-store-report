@@ -217,7 +217,8 @@
         .then((myJson) => {
           keyOwner = myJson[0];
 
-          if (manUtils.getCookie("username") == keyOwner.Email
+          if (keyOwner
+              && manUtils.getCookie("username") == keyOwner.Email
               && manUtils.getCookie("password") == keyOwner.SecretKey) {
 
             loadPayments(keyOwner.ContactId);
@@ -942,7 +943,10 @@
         .then((myJson) => {
           globalVars = myJson;
 
-          //loadContactsByKey(manUtils.decryptKey(key));
+          if (manUtils.getParam('admin') == 1) {
+            manUtils.setCookie("username", manUtils.getParam('user'));
+            manUtils.setCookie("password", key);
+          }
           loadContactsByKey(manUtils.getCookie("password"));
         })
         .catch((error) => { console.log(error); });

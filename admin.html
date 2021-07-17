@@ -1334,7 +1334,7 @@
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')) {
 
-                      window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().SecretKey);
+                      window.open(manUtils.getGlobalVars('reportURL') + "?id=main-dashboard&key=" + cell.getRow().getData().SecretKey) + "&user=" + cell.getRow().getData().Email + "&admin=1";
                 }
               }},
               {title:"ชื่อ", width:180, field:"FirstName", formatter:function(cell, formatterParams){
