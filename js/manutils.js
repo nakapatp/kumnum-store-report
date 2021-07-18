@@ -15,6 +15,7 @@ var manUtils = (function() {
     }
     return false;
   };
+  /*
   obj.checkCookie = function() {
     let user = obj.getCookie("username");
     if (user != "" && user != null) {
@@ -27,8 +28,10 @@ var manUtils = (function() {
     }
     return user;
   }
+  */
   obj.getCookie = function(cname) {
-    return sessionStorage.getItem(cname);
+    //return sessionStorage.getItem(cname);
+    return localStorage.getItem(cname);
     /* Cookie version (Discarded)
     let name = cname + "=";
     let ca = document.cookie.split(';');
@@ -45,7 +48,8 @@ var manUtils = (function() {
     */
   }
   obj.setCookie = function(cname, cvalue, exdays) {
-    sessionStorage.setItem(cname, cvalue);
+    //sessionStorage.setItem(cname, cvalue);
+    localStorage.setItem(cname, cvalue);
     return true;
     /* Cookie version (Discarded)
     const d = new Date();
