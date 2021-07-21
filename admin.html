@@ -466,6 +466,7 @@
           VerifyRejected: "0",
         };
         if (selfPick == "1") {
+          grandTotal -= shippingCost;
           shippingCost = 0;
           data.SelfPick = "1";
         }
@@ -2076,7 +2077,9 @@
                   }
                 }
               }},
-              {title:"บ.", width:60, hozAlign:"right", field:"GrandTotal"},
+              {title:"บ.", width:60, hozAlign:"right", formatter:function(cell, formatterParams){
+                return (cell.getRow().getData().SelfPick == "1") ? cell.getRow().getData().GrandTotal - cell.getRow().getData().ShippingCost : cell.getRow().getData().GrandTotal;
+              }},
               {title:"วันแจ้งโอน", width:100, hozAlign:"center", field:"PaymentDate", headerFilter:"input"},
               {hozAlign:"center", field:"PaymentTime"},
               //{title:"", field:"PaymentVerified", hozAlign:"center", formatter:"tickCross"},
@@ -2144,7 +2147,7 @@
                     Address: row.Address,
                     Province: row.Province,
                     Zip: row.Zip,
-                    PaidAmount: row.GrandTotal,
+                    PaidAmount: (row.SelfPick == "1" ? row.GrandTotal - row.ShippingCost : row.GrandTotal),
                     PaidDate: row.PaymentDate,
                     PaidTime: row.PaymentTime,
                     Transporter: row.Transporter,
