@@ -453,21 +453,27 @@
         }
       }
 
-      function onVerifyPayment(orderId, grandTotal, datePayment, timePayment, shippingCost, mail) {
+      function onVerifyPayment(orderId, grandTotal, datePayment, timePayment, shippingCost, selfPick, mail) {
         disableScreen();
 
         mailTo(mail, 'VerifyPayment'); // Previous: 'Orders'
         // Update 'Orders'
         // -- Update 'Sales'
         // ---- completePurchase()
+        var data = {
+          OrderStatus: 'ชำระเงินเสร็จสมบูรณ์',
+          PaymentVerified: "1",
+          VerifyRejected: "0",
+        };
+        if (selfPick == "1") {
+          shippingCost = 0;
+          data.SelfPick = "1";
+        }
+
         fetch(sheetURL + '/tabs/Orders/OrderId/*' + orderId + '*',
           { method: "PATCH", mode: "cors",
             headers: { "Content-Type": "application/json",},
-            body: JSON.stringify({
-              OrderStatus: 'ชำระเงินเสร็จสมบูรณ์',
-              PaymentVerified: "1",
-              VerifyRejected: "0",
-            }),
+            body: JSON.stringify(data),
           }
         )
         .then((response) => { return response.json(); })
@@ -2036,7 +2042,7 @@
                       CreatedTime: manUtils.getCurrentTime(),
                     };
 
-                    onVerifyPayment(cell.getRow().getData().OrderId, cell.getRow().getData().GrandTotal, cell.getRow().getData().PaymentDate, cell.getRow().getData().PaymentTime, cell.getRow().getData().ShippingCost, mail);
+                    onVerifyPayment(cell.getRow().getData().OrderId, cell.getRow().getData().GrandTotal, cell.getRow().getData().PaymentDate, cell.getRow().getData().PaymentTime, cell.getRow().getData().ShippingCost, cell.getRow().getData().SelfPick, mail);
                   }
                 }
               }},
@@ -2150,6 +2156,7 @@
                 }
               }},
               {title:"วันที่สั่งซื้อ", width:100, field:"CreatedDate", headerFilter:"input"},
+              {title:"รับเอง", field:"SelfPick", hozAlign:"center", formatter:"tickCross"},
             ],
         });
 
