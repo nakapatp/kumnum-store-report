@@ -2137,10 +2137,10 @@
                     || key == manUtils.getGlobalVars('keyAdmin')) {
 
                   //swapOrderNotified(cell.getRow().getData().OrderId, (cell.getRow().getData().Notified == 1) ? "0" : 1);
-
+                  var code = (row.SelfPick == "1" ? 'ReadyToPick' : 'ShippedOrder');
                   var row = cell.getRow().getData();
                   var mail = {
-                    Code: 'ShippedOrder',
+                    Code: code,
                     OrderId: row.OrderId,
                     Name: row.FirstName + ' ' + row.LastName,
                     Phone: manUtils.formatPhoneNumber(row.Phone),
@@ -2156,11 +2156,12 @@
                     CreatedDate: manUtils.getCurrentDate(),
                     CreatedTime: manUtils.getCurrentTime(),
                   };
-                  onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {Notified: (cell.getRow().getData().Notified == 1 ? "0" : 1),}, true, 'main-order', mail, 'ShippedOrder');
+                  onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {Notified: (cell.getRow().getData().Notified == 1 ? "0" : 1),}, true, 'main-order', mail, code);
                 }
               }},
               {title:"วันที่สั่งซื้อ", width:100, field:"CreatedDate", headerFilter:"input"},
               {title:"รับเอง", field:"SelfPick", hozAlign:"center", formatter:"tickCross"},
+              }},
             ],
         });
 
