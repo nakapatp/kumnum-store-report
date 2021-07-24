@@ -2098,7 +2098,7 @@
                   onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {Printed: (cell.getRow().getData().Printed == 1 ? "0" : 1),}, true, 'main-order');
                 }
               }},
-              {title:"ขนส่ง", width:80, field:"Transporter", editor:"select", editorParams:{"Flash":"Flash", "J&T":"J&T", "Kerry":"Kerry", "NimExpress":"NimExpress", "ThaiPost":"ThaiPost"}, cellEdited:function(cell){
+              {title:"ขนส่ง", width:80, field:"Transporter", editor:"select", editorParams:{"รับเอง":"รับเอง", "Flash":"Flash", "J&T":"J&T", "Kerry":"Kerry", "NimExpress":"NimExpress", "ThaiPost":"ThaiPost"}, cellEdited:function(cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')
                     || key == manUtils.getGlobalVars('keyAdmin')) {
