@@ -2016,7 +2016,10 @@
                     }
                 }
               }},
-              {title:"เลขที่คำสั่ง", width:120, field:"OrderId"},
+              {title:"เลขที่คำสั่ง", width:120, formatter:function(cell, formatterParams){
+                var row = cell.getRow().getData();
+                return (row.OrderStatus == 'ป้อนข้อมูลจัดส่ง' && row.PaymentDate != '' && row.PaymentTime != '') ? '<span class="text-primary">' + row.OrderId + '</span>' : row.OrderId;
+              }},
               {title:"สถานะคำสั่ง", width:170, field:"OrderStatus", editor:"select", editorParams:{"ป้อนข้อมูลจัดส่ง":"ป้อนข้อมูลจัดส่ง", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}, headerFilter:true, headerFilterParams:{"ป้อนข้อมูลจัดส่ง":"ป้อนข้อมูลจัดส่ง", "รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินแล้วรอตรวจสอบ":"ชำระเงินแล้วรอตรวจสอบ", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}},
               {formatter:verifyIcon, hozAlign:"center", cellClick:function(e, cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
@@ -2098,7 +2101,7 @@
                   onEditSheet(cell.getRow().getData(), 'Orders', 'OrderId', {Printed: (cell.getRow().getData().Printed == 1 ? "0" : 1),}, true, 'main-order');
                 }
               }},
-              {title:"ขนส่ง", width:80, field:"Transporter", editor:"select", editorParams:{"รับเอง":"รับเอง", "Flash":"Flash", "J&T":"J&T", "Kerry":"Kerry", "NimExpress":"NimExpress", "ThaiPost":"ThaiPost"}, cellEdited:function(cell){
+              {title:"ขนส่ง", width:80, field:"Transporter", editor:"select", editorParams:{"รับเอง":"รับเอง", "ส่งเอง":"ส่งเอง", "Flash":"Flash", "J&T":"J&T", "Kerry":"Kerry", "NimExpress":"NimExpress", "ThaiPost":"ThaiPost"}, cellEdited:function(cell){
                 if (key == manUtils.getGlobalVars('keySuperAdmin')
                     || key == manUtils.getGlobalVars('keyPublisher')
                     || key == manUtils.getGlobalVars('keyAdmin')) {
