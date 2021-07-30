@@ -2140,8 +2140,8 @@
                     || key == manUtils.getGlobalVars('keyAdmin')) {
 
                   //swapOrderNotified(cell.getRow().getData().OrderId, (cell.getRow().getData().Notified == 1) ? "0" : 1);
-                  var code = (row.SelfPick == "1" ? 'ReadyToPick' : 'ShippedOrder');
                   var row = cell.getRow().getData();
+                  var code = (row.SelfPick == "1" ? 'ReadyToPick' : 'ShippedOrder');
                   var mail = {
                     Code: code,
                     OrderId: row.OrderId,
