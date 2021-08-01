@@ -648,7 +648,8 @@
         html += '</tr></thead>';
         html += '<tbody>';
         var n = 0;
-        for (var i = arrSales.length -1; i>=0; i--) {
+        var len = arrSales.length;
+        for (var i = len-1; i>=0; i--) {
           if (arrSales[i].PaymentStatus == 'ชำระเงินเสร็จสมบูรณ์' && arrSales[i].PaymentDate) {
             html += '<tr>';
               html += '<td class="text-center" scope="row">' + Number(Number(i) + 1) +'</td>';
