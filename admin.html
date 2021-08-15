@@ -901,6 +901,9 @@
             sumOutcome += Number(arrPayments[i].Outcome);
           }
         }
+        console.log('sumIncome: ' + sumIncome);
+        console.log('sumOutcome: ' + sumOutcome);
+        console.log('collectiveIncomeMisc: ' + collectiveIncomeMisc);
         bankBalance = sumIncome - sumOutcome;
         sharePublisher = collectiveSharePublisher - outcomePublisher;
         shareCopyright = collectiveShareCopyright - outcomeCopyright;
@@ -943,7 +946,7 @@
           Unit: 'บาท',
           TextColor: 'white',
           Color: 'success',
-          Remark: '= ส่วนแบ่งรอโอน + ส่วนต่างคงเหลือ (ไม่รวมรายได้อื่น ๆ)',
+          Remark: '= เงินรอโอน<sup>3+4+5+6+7+8</sup> + รายได้อื่น ๆ<sup>2</sup>',
         };
         spawnCard(deck, data);
 
@@ -970,7 +973,7 @@
         // Platform Share
         var data = {
           ElementID: 'share-platform',
-          Title: 'ส่วนแบ่งแพลตฟอร์มรอโอน <sup>5</sup>',
+          Title: 'ส่วนแบ่งแพลตฟอร์มรอโอน <sup>4</sup>',
           Value: manUtils.formatNumber(sharePlatform, 0),
           Unit: 'บาท',
           TextColor: 'white',
@@ -982,7 +985,7 @@
         // Copyright Share
         var data = {
           ElementID: 'share-copyright',
-          Title: 'ค่าลิขสิทธิ์รอโอน <sup>4</sup>',
+          Title: 'ค่าลิขสิทธิ์รอโอน <sup>5</sup>',
           Value: manUtils.formatNumber(shareCopyright, 0),
           Unit: 'บาท',
           TextColor: 'white',
