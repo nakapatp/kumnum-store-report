@@ -2262,6 +2262,7 @@
         var table = new Tabulator("#tabulator-sales", {
             maxHeight:450,
             data:arrSales, //set initial table data
+            initialSort:[{column:"PaymentDate", dir:"desc"}],
             columns:[
               {title:"สถานะ", width:160, field:"PaymentStatus", editor:"select", editorParams:{"รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}, headerFilter:true, headerFilterParams:{"รอการชำระเงิน":"รอการชำระเงิน", "ชำระเงินเสร็จสมบูรณ์":"ชำระเงินเสร็จสมบูรณ์"}},
               {formatter:viewIcon, hozAlign:"center", cellClick:function(e, cell){
