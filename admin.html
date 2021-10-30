@@ -113,8 +113,8 @@
 
     <!-- Dashboard JavaScript -->
     <script type="text/javascript">
-      const sheetURL = 'https://sheet.best/api/sheets/b195e9e6-e211-451d-8054-53bf717c89e6'; // Production (pnakapat)
-      //const sheetURL = 'https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc'; // Production
+      //const sheetURL = 'https://sheet.best/api/sheets/b195e9e6-e211-451d-8054-53bf717c89e6'; // Production (pnakapat)
+      const sheetURL = 'https://sheet.best/api/sheets/5acb1568-5ff2-4717-81dc-23a4093f6cbc'; // Production (nakapatp)
       //const sheetURL = 'https://sheet.best/api/sheets/86299b5c-1850-4f51-b969-a44721bfe390'; // Dev
       var menuId = (manUtils.getParam('id') == null || manUtils.getParam('id') == "") ? 'main-dashboard' : manUtils.getParam('id');
       var key = manUtils.getParam('key');
@@ -177,7 +177,7 @@
 
       function loadPayments(iPanel) {
         // GET Author Info
-        fetch(sheetURL + '/tabs/Payments')
+        fetch(sheetURL + '/tabs/Payments') // CONRPT09
         .then((response) => {
             return response.json();
         })
@@ -191,7 +191,7 @@
 
       function loadContacts(iPanel) {
         // GET Author Info
-        fetch(sheetURL + '/tabs/Contacts')
+        fetch(sheetURL + '/tabs/Contacts') // CONRPT10
         .then((response) => {
             return response.json();
         })
@@ -199,7 +199,7 @@
           arrContacts = myJson;
 
           // GET NewContact
-          fetch(sheetURL + '/tabs/NewContact')
+          fetch(sheetURL + '/tabs/NewContact') // CONRPT11
           .then((response) => {
               return response.json();
           })
@@ -216,7 +216,7 @@
       function loadProducts(iPanel) {
 
         // GET Author's Collections
-        fetch(sheetURL + '/tabs/Products')
+        fetch(sheetURL + '/tabs/Products') // CONRPT12
         .then((response) => { return response.json(); })
         .then((myJson) => {
           arrProducts = myJson;
@@ -224,7 +224,7 @@
           if (menuId == 'main-spec') {
 
             // GET New Product
-            fetch(sheetURL + '/tabs/NewProduct')
+            fetch(sheetURL + '/tabs/NewProduct') // CONRPT13
             .then((response) => { return response.json(); })
             .then((myJson) => {
               arrNewProduct = myJson;
@@ -242,7 +242,7 @@
 
       function loadOrders(iPanel) {
         // GET Author's Collections
-        fetch(sheetURL + '/tabs/Orders')
+        fetch(sheetURL + '/tabs/Orders') // CONRPT14
         .then((response) => {
             return response.json();
         })
@@ -257,7 +257,7 @@
 
       function loadSales(iPanel) {
         // GET Author's Collections
-        fetch(sheetURL + '/tabs/Sales/0:600')
+        fetch(sheetURL + '/tabs/Sales/0:600') // CONRPT15
         .then((response) => {
             return response.json();
         })
